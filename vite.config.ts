@@ -21,6 +21,9 @@ export default defineConfig(({ mode }) => {
         '/auth': {
           target: environment.API_TARGET ?? 'http://localhost:3000',
         },
+        '/tasks': {
+          target: environment.API_TARGET ?? 'http://localhost:3000',
+        },
       },
     },
     test: {

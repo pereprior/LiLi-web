@@ -8,7 +8,7 @@ For now, the application only renders a placeholder page. Sign-in, tasks, remind
 
 Use Node.js 24 or later and pnpm. Install dependencies with `pnpm install` for the initial setup. Once the generated `pnpm-lock.yaml` is committed, use `pnpm install --frozen-lockfile` for reproducible installations.
 
-Run `pnpm dev` and open `http://localhost:5173`. The placeholder works without the API. To change the development proxy target, copy `.env.example` to `.env` and edit `API_TARGET`; the default is `http://localhost:3000`. This variable is read by Vite's server configuration and is not exposed to the browser.
+Run `pnpm dev` and open `http://localhost:5173`. The placeholder works without the API. To change the development proxy target, create a local `.env` file containing `API_TARGET=http://localhost:3000` and edit the address as needed. This is also the default target when no file is present. This variable is read by Vite's server configuration and is not exposed to the browser.
 
 The project uses React and Vite, with TypeScript, ESM, ESLint, Prettier, and Vitest, matching the API's shared tools and strict TypeScript settings. Browser code uses TypeScript's bundler resolution instead of the API's NodeNext resolution. Imports can use `#src/`, and local TypeScript runtime imports keep `.js` extensions.
 
@@ -23,11 +23,11 @@ Add future functionality under feature-owned directories such as `src/auth/`, `s
 
 ## Connecting to the API
 
-The development server proxies `/auth` to the API without rewriting the path or the request's Origin header. Future browser requests can use relative URLs, with the API retaining ownership of Google OIDC and its HttpOnly session cookies. The front should not receive Google client secrets or store session tokens.
+The development server proxies `/auth` and `/tasks` to the API without rewriting the paths or the request's Origin header. Future browser requests can use relative URLs, with the API retaining ownership of Google OIDC and its HttpOnly session cookies. The frontend should not receive Google client secrets or store session tokens.
 
-For the current API's authentication flow to run through this proxy, its `APP_ORIGIN` must be `http://localhost:5173`, and Google's registered callback must be `http://localhost:5173/auth/google/callback`. The API still listens on port 3000. These are instructions for future integration; this scaffold does not change the API or Google configuration.
+For the current API's authentication flow to run through this proxy, its `APP_ORIGIN` must be `http://localhost:5173`, and Google's registered callback must be `http://localhost:5173/auth/google/callback`. The API still listens on port 3000. Start both development servers before using the login flow. Registering this callback in Google is a separate configuration step; changing the repositories does not update Google's settings.
 
-The API currently redirects a successful callback to `/auth/me`, which returns JSON. A return to the web interface will need to be agreed and implemented with the login feature. The API checks Origin or Referer on protected writes, so preserve those headers rather than rewriting them to bypass the check.
+The API redirects a successful callback to `/` at `APP_ORIGIN`, returning to the frontend. Once the login interface is implemented, it can call `/auth/me` to retrieve the current session's user. For now, the callback returns to the placeholder page. The API checks Origin or Referer on protected writes, so preserve those headers rather than rewriting them to bypass the check.
 
 Vite's proxy is for development. Production hosting will need to serve the built frontend and route the API endpoints under the same public origin. `pnpm preview` only previews the static build; it does not provide a production API proxy.
 
