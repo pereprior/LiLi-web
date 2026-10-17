@@ -8,6 +8,7 @@ import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { TaskForm } from '#src/tasks/components/form/task-form.js';
 import type {
@@ -40,12 +41,13 @@ export function TaskEditorDialog({
   onReviewCreation,
   onSelectExisting,
 }: TaskEditorDialogProps): ReactElement {
+  const { t } = useTranslation('tasks');
   const fullScreen = useMediaQuery(useTheme().breakpoints.down('sm'));
   const task = editor?.kind === 'edit' ? editor.task : undefined;
   const parentUuid = editor?.kind === 'create' ? editor.parentUuid : undefined;
-  let title = 'Añadir tarea';
-  if (task) title = 'Editar tarea';
-  else if (parentUuid) title = 'Añadir subtarea';
+  let title = t('actions.addTask');
+  if (task) title = t('actions.editTask');
+  else if (parentUuid) title = t('actions.addSubtask');
 
   return (
     <Dialog
@@ -67,22 +69,19 @@ export function TaskEditorDialog({
       <DialogContent>
         {uncertainCreation && (
           <Alert severity="warning" sx={{ mb: 3 }}>
-            Comprueba si tu tarea está en la lista antes de volver a guardar.
+            {t('editor.checkBeforeSaving')}
             {uncertainCreation.tasks === null ? (
               <Button
                 disabled={uncertainCreation.checking}
                 onClick={() => void onReviewCreation()}
               >
                 {uncertainCreation.checking
-                  ? 'Comprobando…'
-                  : 'Comprobar lista'}
+                  ? t('editor.checking')
+                  : t('editor.checkList')}
               </Button>
             ) : (
               <>
-                <Typography variant="body2">
-                  Lista comprobada. Si ya está creada, ábrela; si no está,
-                  puedes volver a guardar.
-                </Typography>
+                <Typography variant="body2">{t('editor.checked')}</Typography>
                 <Stack sx={{ maxHeight: 180, overflowY: 'auto' }}>
                   {uncertainCreation.tasks.map((existingTask) => (
                     <Button

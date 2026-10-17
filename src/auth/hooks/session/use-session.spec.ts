@@ -6,6 +6,7 @@ import { authApi } from '#src/auth/api/auth.api.js';
 import { useSession } from '#src/auth/hooks/session/use-session.js';
 import type { User } from '#src/auth/types/user.type.js';
 import { HttpError } from '#src/shared/http/http-client.js';
+import { i18n } from '#src/shared/i18n/i18n.js';
 
 vi.mock('#src/auth/api/auth.api.js', () => ({
   authApi: { me: vi.fn(), logout: vi.fn() },
@@ -107,6 +108,23 @@ describe('useSession', () => {
         status: 'authenticated',
         user: { uuid: 'current-user', email: 'new@example.com' },
       });
+    });
+
+    it('translates a session error without repeating the failed request', async () => {
+      vi.mocked(authApi.me).mockRejectedValue(new TypeError('Failed to fetch'));
+      const { result } = renderHook(useSession);
+      await waitFor(() => {
+        expect(result.current.state.status).toBe('error');
+      });
+
+      await act(() => i18n.changeLanguage('en'));
+
+      expect(result.current.state).toEqual({
+        status: 'error',
+        message:
+          'Unable to check your session. Check your connection and try again.',
+      });
+      expect(authApi.me).toHaveBeenCalledOnce();
     });
 
     it('does not restore a session after external invalidation', async () => {

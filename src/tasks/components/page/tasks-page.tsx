@@ -5,6 +5,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { type ReactElement, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { TaskConfirmationDialog } from '#src/tasks/components/confirmation/task-confirmation-dialog.js';
 import { TaskDetail } from '#src/tasks/components/detail/task-detail.js';
@@ -27,6 +28,7 @@ export function TasksPage({
   email,
   onUnauthorized,
 }: TasksPageProps): ReactElement {
+  const { t } = useTranslation('tasks');
   const [filters, setFilters] = useState<TaskFilters>({});
   const [reloadCount, setReloadCount] = useState(0);
   const { selectedUuid, selectTask } = useTaskSelection();
@@ -66,10 +68,10 @@ export function TasksPage({
       >
         <Box>
           <Typography component="h1" variant="h4" sx={{ fontWeight: 650 }}>
-            Tus tareas
+            {t('page.title')}
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 1 }}>
-            Lo que tienes entre manos, a tu ritmo.
+            {t('page.description')}
           </Typography>
         </Box>
         <Button
@@ -77,7 +79,7 @@ export function TasksPage({
           disabled={actions.busy}
           onClick={() => actions.openEditor({ kind: 'create' })}
         >
-          Añadir tarea
+          {t('actions.addTask')}
         </Button>
       </Stack>
       {actions.notice && (
@@ -97,18 +99,20 @@ export function TasksPage({
       >
         <Typography variant="body2" color="text.secondary" role="status">
           {list.status === 'ready'
-            ? `${list.data.length} ${list.data.length === 1 ? 'tarea' : 'tareas'}${filtered ? ' en esta consulta' : ''}`
+            ? t(filtered ? 'page.filteredCount' : 'page.count', {
+                count: list.data.length,
+              })
             : list.status === 'loading'
-              ? 'Cargando tareas…'
-              : 'No se pudo cargar la consulta'}
+              ? t('page.loading')
+              : t('page.queryError')}
         </Typography>
         <Button disabled={list.status === 'loading'} onClick={refresh}>
-          Recargar
+          {t('actions.reload')}
         </Button>
       </Stack>
       {list.status === 'loading' && (
         <Box sx={{ textAlign: 'center', py: 5 }}>
-          <CircularProgress aria-label="Cargando tareas" />
+          <CircularProgress aria-label={t('page.loadingLabel')} />
         </Box>
       )}
       {list.status === 'error' && (
@@ -116,13 +120,11 @@ export function TasksPage({
           severity="error"
           action={
             <Button color="inherit" onClick={refresh}>
-              Reintentar
+              {t('actions.retry')}
             </Button>
           }
         >
-          {actions.notice
-            ? 'La operación se guardó, pero no se pudo actualizar la lista. No hace falta repetirla. '
-            : ''}
+          {actions.notice ? `${t('page.savedRefreshError')} ` : ''}
           {list.message}
         </Alert>
       )}

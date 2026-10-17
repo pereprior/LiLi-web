@@ -2,8 +2,10 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export function Brand(): ReactElement {
+  const { t } = useTranslation('app');
   return (
     <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
       <Box
@@ -23,7 +25,7 @@ export function Brand(): ReactElement {
           LiLi
         </Typography>
         <Typography variant="caption" component="p" color="text.secondary">
-          Un poco de calma para tu día
+          {t('tagline')}
         </Typography>
       </Box>
     </Stack>

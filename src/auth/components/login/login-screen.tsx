@@ -5,6 +5,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type LoginScreenProps = {
   onRetry?: () => void;
@@ -17,6 +18,7 @@ export function LoginScreen({
   error,
   checking = false,
 }: LoginScreenProps): ReactElement {
+  const { t } = useTranslation('auth');
   return (
     <Paper
       variant="outlined"
@@ -25,11 +27,9 @@ export function LoginScreen({
       <Stack spacing={3}>
         <Stack spacing={1}>
           <Typography component="h1" variant="h4">
-            Un poco de orden para casa
+            {t('title')}
           </Typography>
-          <Typography color="text.secondary">
-            Tus tareas, planes y recordatorios, en un mismo lugar.
-          </Typography>
+          <Typography color="text.secondary">{t('description')}</Typography>
         </Stack>
         {checking ? (
           <Stack
@@ -38,26 +38,25 @@ export function LoginScreen({
             sx={{ alignItems: 'center' }}
             role="status"
           >
-            <CircularProgress size={24} aria-label="Comprobando sesión" />
-            <Typography>Conectando con LiLi…</Typography>
+            <CircularProgress size={24} aria-label={t('checkingSession')} />
+            <Typography>{t('connecting')}</Typography>
           </Stack>
         ) : error ? (
           <Stack spacing={2}>
             <Alert severity="error">{error}</Alert>
             {onRetry ? (
               <Button variant="outlined" onClick={onRetry}>
-                Volver a comprobar
+                {t('retry')}
               </Button>
             ) : null}
           </Stack>
         ) : (
           <Stack spacing={2}>
             <Button href="/auth/google" variant="contained" size="large">
-              Entrar con Google
+              {t('signIn')}
             </Button>
             <Typography variant="body2" color="text.secondary">
-              LiLi es un espacio privado para casa. Accede con una cuenta de
-              Google autorizada.
+              {t('privateSpace')}
             </Typography>
           </Stack>
         )}

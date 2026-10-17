@@ -9,6 +9,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { type ReactElement, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { TaskFilters } from '#src/tasks/types/task.types.js';
 import { taskStatusLabels } from '#src/tasks/types/task-labels.js';
@@ -23,15 +24,16 @@ export function TaskFilters({
   filters,
   onApply,
 }: TaskFiltersProps): ReactElement {
+  const { t } = useTranslation('tasks');
   const [draft, setDraft] = useState<TaskFilters>(filters);
-  const [error, setError] = useState('');
+  const [hasDateError, setHasDateError] = useState(false);
 
   function apply(): void {
     if (draft.dateFrom && draft.dateTo && draft.dateFrom > draft.dateTo) {
-      setError('El último día no puede ser anterior al primero.');
+      setHasDateError(true);
       return;
     }
-    setError('');
+    setHasDateError(false);
     onApply(draft);
   }
 
@@ -46,7 +48,7 @@ export function TaskFilters({
         id="task-filters-heading"
       >
         <Typography component="h2" variant="subtitle2">
-          Buscar, filtrar y ordenar +
+          {t('filters.title')}
         </Typography>
       </AccordionSummary>
       <AccordionDetails id="task-filters-content">
@@ -59,17 +61,17 @@ export function TaskFilters({
         >
           <Stack spacing={3}>
             <TextField
-              label="Buscar tareas"
+              label={t('filters.search')}
               type="search"
               value={draft.search ?? ''}
               onChange={(event) =>
                 setDraft({ ...draft, search: event.target.value })
               }
-              helperText="Busca en el nombre o la descripción."
+              helperText={t('filters.searchHelp')}
             />
             <Box component="fieldset" sx={{ border: 0, m: 0, p: 0 }}>
               <Typography component="legend" variant="body2">
-                Estados
+                {t('filters.statuses')}
               </Typography>
               <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap' }}>
                 {Object.values(TaskStatus).map((status) => (
@@ -100,7 +102,7 @@ export function TaskFilters({
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
                 select
-                label="Fecha por"
+                label={t('filters.dateField')}
                 value={draft.dateField ?? ''}
                 onChange={(event) => {
                   const manual = { ...draft };
@@ -118,12 +120,12 @@ export function TaskFilters({
                 slotProps={{ select: { native: true } }}
                 sx={{ flex: 1 }}
               >
-                <option value="">Sin filtro de fecha</option>
-                <option value="start">Inicio</option>
-                <option value="end">Fin</option>
+                <option value="">{t('filters.noDateFilter')}</option>
+                <option value="start">{t('dates.start.label')}</option>
+                <option value="end">{t('dates.end.label')}</option>
               </TextField>
               <TextField
-                label="Desde el día"
+                label={t('filters.dateFrom')}
                 type="date"
                 value={draft.dateFrom ?? ''}
                 onChange={(event) => {
@@ -132,12 +134,16 @@ export function TaskFilters({
                   setDraft({ ...manual, dateFrom: event.target.value });
                 }}
                 slotProps={{ inputLabel: { shrink: true } }}
-                error={!!error}
-                helperText={error || 'Día incluido · Madrid'}
+                error={hasDateError}
+                helperText={
+                  hasDateError
+                    ? t('filters.invalidDateRange')
+                    : t('filters.inclusiveDay')
+                }
                 sx={{ flex: 1 }}
               />
               <TextField
-                label="Hasta el día"
+                label={t('filters.dateTo')}
                 type="date"
                 value={draft.dateTo ?? ''}
                 onChange={(event) => {
@@ -146,15 +152,15 @@ export function TaskFilters({
                   setDraft({ ...manual, dateTo: event.target.value });
                 }}
                 slotProps={{ inputLabel: { shrink: true } }}
-                error={!!error}
-                helperText="Día incluido · Madrid"
+                error={hasDateError}
+                helperText={t('filters.inclusiveDay')}
                 sx={{ flex: 1 }}
               />
             </Stack>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
                 select
-                label="Ordenar por"
+                label={t('filters.sortBy')}
                 value={draft.sortBy ?? 'createdAt'}
                 onChange={(event) =>
                   setDraft({
@@ -166,14 +172,14 @@ export function TaskFilters({
                 slotProps={{ select: { native: true } }}
                 sx={{ flex: 1 }}
               >
-                <option value="createdAt">Creación</option>
-                <option value="priority">Prioridad</option>
-                <option value="start">Inicio</option>
-                <option value="end">Fin</option>
+                <option value="createdAt">{t('filters.createdAt')}</option>
+                <option value="priority">{t('form.priority')}</option>
+                <option value="start">{t('dates.start.label')}</option>
+                <option value="end">{t('dates.end.label')}</option>
               </TextField>
               <TextField
                 select
-                label="Sentido"
+                label={t('filters.sortDirection')}
                 value={draft.sortDirection ?? 'asc'}
                 onChange={(event) =>
                   setDraft({
@@ -184,15 +190,15 @@ export function TaskFilters({
                 slotProps={{ select: { native: true } }}
                 sx={{ flex: 1 }}
               >
-                <option value="asc">Ascendente</option>
-                <option value="desc">Descendente</option>
+                <option value="asc">{t('filters.ascending')}</option>
+                <option value="desc">{t('filters.descending')}</option>
               </TextField>
             </Stack>
             <Stack direction="row" spacing={1}>
               <Button type="submit" variant="contained">
-                Aplicar filtros
+                {t('filters.apply')}
               </Button>
-              <Button onClick={() => onApply({})}>Limpiar filtros</Button>
+              <Button onClick={() => onApply({})}>{t('filters.clear')}</Button>
             </Stack>
           </Stack>
         </Box>

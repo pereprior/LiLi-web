@@ -1,18 +1,13 @@
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { TaskFilters, TaskView } from '#src/tasks/types/task.types.js';
 import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
 
 type View = TaskView | 'all' | 'closed';
-const views: { value: View; label: string }[] = [
-  { value: 'all', label: 'Todas' },
-  { value: 'overdue', label: 'Vencidas' },
-  { value: 'today', label: 'Hoy' },
-  { value: 'upcoming', label: 'Próximos 7 días' },
-  { value: 'closed', label: 'Completadas y canceladas' },
-];
+const views: View[] = ['all', 'overdue', 'today', 'upcoming', 'closed'];
 
 type TaskViewsProps = {
   filters: TaskFilters;
@@ -20,6 +15,7 @@ type TaskViewsProps = {
 };
 
 export function TaskViews({ filters, onChange }: TaskViewsProps): ReactElement {
+  const { t } = useTranslation('tasks');
   let selectedView: View | null = null;
   if (filters.view) selectedView = filters.view;
   else if (
@@ -52,19 +48,19 @@ export function TaskViews({ filters, onChange }: TaskViewsProps): ReactElement {
   return (
     <Stack
       component="nav"
-      aria-label="Vistas de tareas"
+      aria-label={t('views.label')}
       direction="row"
       useFlexGap
       sx={{ flexWrap: 'wrap', gap: 1 }}
     >
       {views.map((view) => (
         <Button
-          key={view.value}
-          variant={selectedView === view.value ? 'contained' : 'outlined'}
-          aria-pressed={selectedView === view.value}
-          onClick={() => chooseView(view.value)}
+          key={view}
+          variant={selectedView === view ? 'contained' : 'outlined'}
+          aria-pressed={selectedView === view}
+          onClick={() => chooseView(view)}
         >
-          {view.label}
+          {t(`views.${view}`)}
         </Button>
       ))}
     </Stack>

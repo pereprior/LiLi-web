@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('lili-language', 'es');
+  });
+});
+
 test('creates, edits and deletes a task through the interface', async ({
   page,
 }) => {
@@ -98,7 +104,9 @@ test('creates, edits and deletes a task through the interface', async ({
   ).toBeVisible();
   await page.getByRole('button', { name: 'Eliminar', exact: true }).click();
   await expect(
-    page.getByRole('heading', { name: 'Un poco de espacio para organizarte' }),
+    page.getByRole('heading', {
+      name: 'Un poco de espacio para organizarte',
+    }),
   ).toBeVisible();
   await expect(page).toHaveURL('/');
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute(
@@ -378,7 +386,9 @@ test('creates a subtask and refreshes all children after cancelling their princi
     .click();
   await page.getByRole('button', { name: 'Eliminar', exact: true }).click();
   await expect(
-    page.getByRole('heading', { name: 'Un poco de espacio para organizarte' }),
+    page.getByRole('heading', {
+      name: 'Un poco de espacio para organizarte',
+    }),
   ).toBeVisible();
 });
 

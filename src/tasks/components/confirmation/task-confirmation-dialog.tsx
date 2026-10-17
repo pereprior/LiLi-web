@@ -6,6 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { TaskConfirmation } from '#src/tasks/hooks/actions/use-task-actions.js';
 
@@ -24,19 +25,24 @@ export function TaskConfirmationDialog({
   onClose,
   onConfirm,
 }: TaskConfirmationDialogProps): ReactElement {
+  const { t } = useTranslation('tasks');
   const deleting = confirmation?.kind === 'delete';
-  const title = deleting ? 'Eliminar tarea' : 'Cancelar tarea';
-  const confirmLabel = deleting ? 'Eliminar' : 'Cancelar tarea y subtareas';
+  const title = deleting
+    ? t('actions.deleteTask')
+    : t('confirmation.cancelTitle');
+  const confirmLabel = deleting
+    ? t('confirmation.delete')
+    : t('confirmation.cancelConfirm');
   let description = '';
   if (confirmation) {
     const { task } = confirmation;
     if (deleting) {
-      description = `Se eliminará «${task.name}».`;
+      description = t('confirmation.deleteDescription', { name: task.name });
       if (task.parentUuid === null)
-        description += ' También se eliminarán todas sus subtareas.';
-      description += ' Esta acción no se puede deshacer.';
+        description += ` ${t('confirmation.deleteSubtasks')}`;
+      description += ` ${t('confirmation.irreversible')}`;
     } else {
-      description = `Se cancelará «${task.name}» y todas sus subtareas visibles. Si alguna está completada, la operación se rechazará.`;
+      description = t('confirmation.cancelDescription', { name: task.name });
     }
   }
 
@@ -50,8 +56,7 @@ export function TaskConfirmationDialog({
       <DialogTitle id="confirmation-title">{title}</DialogTitle>
       <DialogContent>
         <DialogContentText id="confirmation-description">
-          {description} Los avisos pendientes se anularán; un correo en curso no
-          puede retirarse.
+          {description} {t('confirmation.reminders')}
         </DialogContentText>
         {error && (
           <Alert severity="error" sx={{ mt: 2 }}>
@@ -61,7 +66,7 @@ export function TaskConfirmationDialog({
       </DialogContent>
       <DialogActions>
         <Button disabled={busy} onClick={onClose}>
-          Volver
+          {t('actions.back')}
         </Button>
         <Button
           color={deleting ? 'error' : 'primary'}
@@ -69,7 +74,7 @@ export function TaskConfirmationDialog({
           disabled={busy}
           onClick={() => void onConfirm()}
         >
-          {busy ? 'Guardando…' : confirmLabel}
+          {busy ? t('actions.saving') : confirmLabel}
         </Button>
       </DialogActions>
     </Dialog>

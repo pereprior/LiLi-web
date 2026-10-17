@@ -7,6 +7,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { FormEvent, ReactElement } from 'react';
 import { useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type {
   CreateTaskInput,
@@ -36,7 +37,7 @@ export interface TaskFormProps {
 }
 
 interface TaskDateFieldsProps {
-  label: string;
+  kind: 'start' | 'end' | 'reminder';
   value: TaskDateDraft;
   onChange: (value: TaskDateDraft) => void;
   disabled: boolean;
@@ -45,23 +46,24 @@ interface TaskDateFieldsProps {
 }
 
 function TaskDateFields({
-  label,
+  kind,
   value,
   onChange,
   disabled,
   error,
   reminder = false,
 }: TaskDateFieldsProps): ReactElement {
+  const { t } = useTranslation('tasks');
   const id = useId();
   return (
     <Box component="fieldset" sx={{ m: 0, p: 0, border: 0, minWidth: 0 }}>
       <Typography component="legend" variant="subtitle2" sx={{ mb: 1.5 }}>
-        {label}
+        {t(`dates.${kind}.label`)}
       </Typography>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
         <TextField
           id={`${id}-date`}
-          label={`Día de ${label.toLowerCase()}`}
+          label={t(`dates.${kind}.day`)}
           type="date"
           value={value.date}
           onChange={(event) => {
@@ -70,18 +72,18 @@ function TaskDateFields({
           }}
           disabled={disabled}
           error={error !== undefined}
-          helperText={error ?? 'Opcional'}
+          helperText={error ?? t('form.optional')}
           slotProps={{ inputLabel: { shrink: true } }}
           fullWidth
         />
         <TextField
           id={`${id}-time`}
-          label={`Hora de ${label.toLowerCase()}`}
+          label={t(`dates.${kind}.time`)}
           type="time"
           value={value.time}
           onChange={(event) => onChange({ ...value, time: event.target.value })}
           disabled={disabled || value.date === ''}
-          helperText="Opcional · hora de Madrid"
+          helperText={t('form.optionalMadridTime')}
           slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 60 } }}
           fullWidth
         />
@@ -92,23 +94,19 @@ function TaskDateFields({
           disabled={disabled || value.date === ''}
           onClick={() => onChange({ date: '', time: '' })}
         >
-          Quitar {label.toLowerCase()}
+          {t(`dates.${kind}.remove`)}
         </Button>
         <Button
           size="small"
           disabled={disabled || value.time === ''}
           onClick={() => onChange({ ...value, time: '' })}
         >
-          Quitar hora de {label.toLowerCase()}
+          {t(`dates.${kind}.removeTime`)}
         </Button>
       </Stack>
       {reminder ? (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Sin hora indicada: aviso a las 06:00 de Madrid. Se dirige al correo de
-          Google del propietario y se enviará si el servidor lo tiene habilitado
-          y configurado. Completar, cancelar, eliminar o quitar el recordatorio
-          anula los avisos pendientes; un correo cuyo envío ya está en curso no
-          se puede retirar.
+          {t('form.reminderHelp')}
         </Typography>
       ) : null}
     </Box>
@@ -124,12 +122,13 @@ export function TaskForm({
   submitBlocked = false,
   error,
 }: TaskFormProps): ReactElement {
+  const { t } = useTranslation('tasks');
   // The owner keys each editing session. Server refreshes must preserve its draft
   // and the original values used to decide which PATCH fields changed.
   const [original] = useState(task);
   const [draft, setDraft] = useState(() => createTaskDraft(task));
   const [showValidation, setShowValidation] = useState(false);
-  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [submissionFailed, setSubmissionFailed] = useState(false);
   const id = useId();
   const terminal =
     task?.status === TaskStatus.COMPLETED ||
@@ -143,7 +142,7 @@ export function TaskForm({
 
   function changeDraft(changes: Partial<TaskDraft>): void {
     setDraft((current) => ({ ...current, ...changes }));
-    setSubmissionError(null);
+    setSubmissionFailed(false);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -151,11 +150,11 @@ export function TaskForm({
     if (disabled || unchanged || submitBlocked) return;
     setShowValidation(true);
     if (Object.keys(validation).length > 0) return;
-    setSubmissionError(null);
+    setSubmissionFailed(false);
     try {
       await onSubmit(update ?? buildCreateTaskInput(draft, parentUuid));
     } catch {
-      setSubmissionError('No se pudo guardar la tarea. Inténtalo de nuevo.');
+      setSubmissionFailed(true);
     }
   }
 
@@ -163,29 +162,25 @@ export function TaskForm({
     <Stack
       component="form"
       noValidate
-      aria-label={original === undefined ? 'Crear tarea' : 'Editar tarea'}
+      aria-label={
+        original === undefined ? t('actions.createTask') : t('actions.editTask')
+      }
       aria-busy={submitting}
       onSubmit={(event: FormEvent<HTMLFormElement>) => void submit(event)}
       spacing={3}
     >
       {terminal ? (
-        <Alert severity="info">
-          Las tareas completadas o canceladas se consultan en modo lectura. Sus
-          fechas y recordatorio son datos guardados; no representan avisos
-          activos.
-        </Alert>
+        <Alert severity="info">{t('form.terminalHelp')}</Alert>
       ) : null}
-      {error !== null || submissionError !== null ? (
-        <Alert severity="error">{error ?? submissionError}</Alert>
+      {error !== null || submissionFailed ? (
+        <Alert severity="error">{error ?? t('form.saveError')}</Alert>
       ) : null}
       {showValidation && Object.keys(validation).length > 0 ? (
-        <Alert severity="error">
-          Revisa los campos indicados antes de guardar.
-        </Alert>
+        <Alert severity="error">{t('form.reviewFields')}</Alert>
       ) : null}
       <TextField
         id={`${id}-name`}
-        label="Nombre"
+        label={t('form.name')}
         value={draft.name}
         onChange={(event) => changeDraft({ name: event.target.value })}
         required
@@ -198,7 +193,7 @@ export function TaskForm({
       <Box>
         <TextField
           id={`${id}-description`}
-          label="Descripción"
+          label={t('form.description')}
           value={draft.description ?? ''}
           onChange={(event) => changeDraft({ description: event.target.value })}
           disabled={disabled}
@@ -212,12 +207,12 @@ export function TaskForm({
           disabled={disabled || draft.description === null}
           sx={{ mt: 0.5 }}
         >
-          Quitar descripción
+          {t('form.removeDescription')}
         </Button>
       </Box>
       <TextField
         id={`${id}-priority`}
-        label="Prioridad"
+        label={t('form.priority')}
         select
         value={draft.priority}
         onChange={(event) => {
@@ -236,27 +231,24 @@ export function TaskForm({
         ))}
       </TextField>
       <Typography variant="body2" color="text.secondary">
-        Todas las fechas y horas se interpretan en Europe/Madrid. La hora es
-        opcional; 00:00 significa medianoche explícita. Puedes guardar solo un
-        día. Una hora inexistente por el cambio de horario será rechazada por el
-        servidor para que puedas corregirla.
+        {t('form.datesHelp')}
       </Typography>
       <TaskDateFields
-        label="Inicio"
+        kind="start"
         value={draft.start}
         onChange={(start) => changeDraft({ start })}
         disabled={disabled}
         error={errors.start}
       />
       <TaskDateFields
-        label="Fin"
+        kind="end"
         value={draft.end}
         onChange={(end) => changeDraft({ end })}
         disabled={disabled}
         error={errors.end}
       />
       <TaskDateFields
-        label="Recordatorio"
+        kind="reminder"
         value={draft.reminder}
         onChange={(reminder) => changeDraft({ reminder })}
         disabled={disabled}
@@ -265,13 +257,12 @@ export function TaskForm({
       />
       {original === undefined ? (
         <Typography variant="body2" color="text.secondary">
-          La tarea se creará como pendiente. Después podrás programarla desde su
-          detalle.
+          {t('form.createHelp')}
         </Typography>
       ) : null}
       <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
         <Button onClick={onCancel} disabled={submitting}>
-          Cancelar
+          {t('actions.cancel')}
         </Button>
         <Button
           variant="contained"
@@ -279,7 +270,9 @@ export function TaskForm({
           disabled={disabled || unchanged || submitBlocked}
           loading={submitting}
         >
-          {original === undefined ? 'Crear tarea' : 'Guardar cambios'}
+          {original === undefined
+            ? t('actions.createTask')
+            : t('actions.saveChanges')}
         </Button>
       </Stack>
     </Stack>

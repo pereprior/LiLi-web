@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HttpError } from '#src/shared/http/http-client.js';
+import { i18n } from '#src/shared/i18n/i18n.js';
 import { tasksApi } from '#src/tasks/api/tasks.api.js';
 import { useTaskActions } from '#src/tasks/hooks/actions/use-task-actions.js';
 import type { Task } from '#src/tasks/types/task.types.js';
@@ -99,6 +100,67 @@ describe('task actions', () => {
     });
     await act(() => result.current.save({ name: 'Comprar pan' }));
     expect(tasksApi.create).toHaveBeenCalledTimes(2);
+  });
+
+  it('translates a creation notice without repeating the mutation', async () => {
+    vi.mocked(tasksApi.create).mockResolvedValue({
+      uuid: 'saved',
+      userUuid: 'user',
+      parentUuid: null,
+      name: 'Comprar pan',
+      description: null,
+      status: TaskStatus.PENDING,
+      priority: TaskPriority.MEDIUM,
+      start: null,
+      end: null,
+      reminder: null,
+    });
+    const refresh = vi.fn();
+    const { result } = renderHook(() =>
+      useTaskActions({
+        filtered: false,
+        selectTask: vi.fn(),
+        refresh,
+        onUnauthorized: vi.fn(),
+      }),
+    );
+    act(() => result.current.openEditor({ kind: 'create' }));
+    await act(() => result.current.save({ name: 'Comprar pan' }));
+    expect(result.current.notice).toBe('Tarea creada.');
+
+    await act(() => i18n.changeLanguage('en'));
+
+    expect(result.current.notice).toBe('Task created.');
+    expect(tasksApi.create).toHaveBeenCalledOnce();
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it('translates uncertain creation without releasing the retry safeguard', async () => {
+    vi.mocked(tasksApi.create).mockRejectedValue(
+      new TypeError('Failed to fetch'),
+    );
+    const { result } = renderHook(() =>
+      useTaskActions({
+        filtered: false,
+        selectTask: vi.fn(),
+        refresh: vi.fn(),
+        onUnauthorized: vi.fn(),
+      }),
+    );
+    act(() => result.current.openEditor({ kind: 'create' }));
+    await act(() => result.current.save({ name: 'Comprar pan' }));
+
+    await act(() => i18n.changeLanguage('en'));
+    await act(() => result.current.save({ name: 'Comprar pan' }));
+
+    expect(result.current.mutationError).toBe(
+      'No confirmation was received. The task may have been created. Check the list before trying again.',
+    );
+    expect(result.current.uncertainCreation).toEqual({
+      tasks: null,
+      checking: false,
+    });
+    expect(tasksApi.create).toHaveBeenCalledOnce();
   });
 
   it('retains the editing session and refreshes context after409', async () => {

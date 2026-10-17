@@ -117,7 +117,7 @@ Fuentes: [Vite](../vite.config.ts),
    creación, edición, cambio de estado, filtros y errores. Mantenerlos dentro
    de la funcionalidad que los usa; no importar código NestJS o Prisma.
 2. Representar los siete estados y las tres prioridades con enums del
-   frontend y etiquetas españolas separadas de sus valores HTTP.
+   frontend y etiquetas traducidas separadas de sus valores HTTP.
 3. Crear un cliente HTTP pequeño compartido por autenticación y tareas. Debe
    conservar las cookies de las peticiones al mismo origen; se puede explicitar
    `credentials: 'same-origin'`. Enviar JSON en las escrituras que tienen cuerpo.
@@ -412,7 +412,7 @@ y [reglas de ciclo de vida](../../LiLi-api/test/tasks/task-lifecycle.e2e-spec.ts
 
 ### Paso 9 · Implementar los cambios de estado
 
-1. Mostrar etiquetas españolas conservando estos valores HTTP:
+1. Mostrar etiquetas traducidas conservando estos valores HTTP:
 
    | Valor         | Etiqueta propuesta |
    | ------------- | ------------------ |

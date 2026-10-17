@@ -1,3 +1,5 @@
+import '#src/shared/i18n/i18n.js';
+
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { StrictMode } from 'react';

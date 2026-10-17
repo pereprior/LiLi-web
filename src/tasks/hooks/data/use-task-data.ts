@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { getErrorMessage } from '#src/shared/http/error-message.js';
 import { HttpError } from '#src/shared/http/http-client.js';
@@ -10,13 +11,19 @@ export type TaskQuery<T> =
   | { status: 'ready'; data: T }
   | { status: 'error'; message: string; code: number };
 
-type QueryResult<T> = { key: string; result: TaskQuery<T> };
+type QueryResult<T> = {
+  key: string;
+  result:
+    | { status: 'ready'; data: T }
+    | { status: 'error'; error: unknown; code: number };
+};
 
 export function useTaskList(
   filters: TaskFilters,
   revision: number,
   onUnauthorized: () => void,
 ): TaskQuery<Task[]> {
+  useTranslation('common');
   const filterKey = JSON.stringify(filters);
   const key = `${revision}:${filterKey}`;
   const [loaded, setLoaded] = useState<QueryResult<Task[]> | null>(null);
@@ -39,7 +46,7 @@ export function useTaskList(
           key,
           result: {
             status: 'error',
-            message: getErrorMessage(error),
+            error,
             code: error instanceof HttpError ? error.status : 0,
           },
         });
@@ -48,7 +55,14 @@ export function useTaskList(
     return (): void => controller.abort();
   }, [filterKey, key, onUnauthorized]);
 
-  return loaded?.key === key ? loaded.result : { status: 'loading' };
+  if (loaded?.key !== key) return { status: 'loading' };
+  if (loaded.result.status === 'error')
+    return {
+      status: 'error',
+      message: getErrorMessage(loaded.result.error),
+      code: loaded.result.code,
+    };
+  return loaded.result;
 }
 
 export type TaskContext = { task: Task; family: Task[] };
@@ -58,6 +72,7 @@ export function useTaskContext(
   revision: number,
   onUnauthorized: () => void,
 ): TaskQuery<TaskContext> {
+  useTranslation('common');
   const key = `${revision}:${uuid ?? ''}`;
   const [loaded, setLoaded] = useState<QueryResult<TaskContext> | null>(null);
 
@@ -97,7 +112,7 @@ export function useTaskContext(
           key,
           result: {
             status: 'error',
-            message: getErrorMessage(error),
+            error,
             code: error instanceof HttpError ? error.status : 0,
           },
         });
@@ -106,5 +121,12 @@ export function useTaskContext(
     return (): void => controller.abort();
   }, [uuid, key, onUnauthorized]);
 
-  return loaded?.key === key ? loaded.result : { status: 'loading' };
+  if (loaded?.key !== key) return { status: 'loading' };
+  if (loaded.result.status === 'error')
+    return {
+      status: 'error',
+      message: getErrorMessage(loaded.result.error),
+      code: loaded.result.code,
+    };
+  return loaded.result;
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { authApi } from '#src/auth/api/auth.api.js';
 import type { User } from '#src/auth/types/user.type.js';
@@ -19,10 +20,18 @@ type Session = {
   logoutError: string | null;
 };
 
+type InternalSessionState =
+  Exclude<SessionState, { status: 'error' }> | { status: 'error' };
+
+type LogoutError = 'logoutRejected' | 'logoutConnection';
+
 export function useSession(): Session {
-  const [state, setState] = useState<SessionState>({ status: 'checking' });
+  const { t } = useTranslation('auth');
+  const [state, setState] = useState<InternalSessionState>({
+    status: 'checking',
+  });
   const [loggingOut, setLoggingOut] = useState(false);
-  const [logoutError, setLogoutError] = useState<string | null>(null);
+  const [logoutError, setLogoutError] = useState<LogoutError | null>(null);
   const mounted = useRef(false);
   const requestVersion = useRef(0);
   const sessionCheck = useRef<AbortController | null>(null);
@@ -73,8 +82,6 @@ export function useSession(): Session {
         } else {
           setState({
             status: 'error',
-            message:
-              'No se ha podido comprobar la sesión. Revisa la conexión y vuelve a intentarlo.',
           });
         }
       })
@@ -106,8 +113,8 @@ export function useSession(): Session {
       } else {
         setLogoutError(
           error instanceof HttpError && error.status === 403
-            ? 'No se ha podido cerrar la sesión. LiLi ha rechazado la operación.'
-            : 'No se ha podido cerrar la sesión. Revisa la conexión y vuelve a intentarlo.',
+            ? 'logoutRejected'
+            : 'logoutConnection',
         );
       }
     } finally {
@@ -129,11 +136,14 @@ export function useSession(): Session {
   }, [checkSession]);
 
   return {
-    state,
+    state:
+      state.status === 'error'
+        ? { status: 'error', message: t('errors.session') }
+        : state,
     checkSession,
     invalidateSession,
     logout,
     loggingOut,
-    logoutError,
+    logoutError: logoutError === null ? null : t(`errors.${logoutError}`),
   };
 }

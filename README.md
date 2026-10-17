@@ -23,21 +23,29 @@ The current API requires its Gmail sender and application password even with `RE
 
 React Router handles navigation in the browser: `/` shows the authenticated tasks page, and `/login` shows Google sign-in. Opening `/` without a session redirects to `/login`; an authenticated visit to `/login` returns to `/`. Unknown interface paths return to `/`. Session checks finish before redirects, and connection failures keep the retry screen at the requested address.
 
-After sign-in, use **Añadir tarea** to create a task. New tasks start as pending; dates do not change their state automatically. A detail can be reloaded or linked using `/?task=<uuid>`. Browser back and forward follow the selection, and returning to the list keeps its filters. React Router manages this selection in the query string; unrelated query parameters and URL fragments are preserved.
+After sign-in, use **Add task** to create a task. New tasks start as pending; dates do not change their state automatically. A detail can be reloaded or linked using `/?task=<uuid>`. Browser back and forward follow the selection, and returning to the list keeps its filters. React Router manages this selection in the query string; unrelated query parameters and URL fragments are preserved.
 
 Each optional date accepts a day with or without a time. Dates and times refer to Madrid, independent of the device's timezone. Date-only values stay distinct from explicit midnight. Editing sends only changed fields; removing an optional field sends `null`. Failed validation or a failed write keeps the draft. If a creation loses its confirmation, check the complete list before sending it again. A confirmed write remains successful even if the subsequent reload fails.
 
 Principal tasks show all their subtasks, including terminal children omitted by the active list filters. You can open the principal of a filtered subtask without changing the results. Status controls explain unavailable transitions; the API checks the final operation. Cancelling a principal requires confirmation and refreshes its children. Completed and cancelled tasks are read-only and can still be deleted. Deleting a principal also removes its children, with no undo operation.
 
-Search and filters are submitted explicitly. **Vencidas**, **Hoy** and **Próximos 7 días** use the API's Madrid calendar rules and exclude terminal tasks. Manual date or status filters replace a quick view. **Completadas y canceladas** is a status filter. Counts describe only the current query, and rows retain the server's ordering.
+Search and filters are submitted explicitly. **Overdue**, **Today** and **Next 7 days** use the API's Madrid calendar rules and exclude terminal tasks. Manual date or status filters replace a quick view. **Completed and cancelled** is a status filter. Counts describe only the current query, and rows retain the server's ordering.
 
 Reminder dates are saved as part of a task. A reminder without a time uses 06:00 in Madrid; the frontend keeps its absent time. Delivery uses the owner's Google email and depends on the server configuration. The interface confirms saved dates, without reporting sent or failed emails. Completing, cancelling, deleting or clearing a reminder cancels pending sends; it cannot withdraw an email already being sent.
 
 A `401` removes private tasks, detail and drafts and returns to sign-in. Connection failures offer a retry. A rejected write with `403` keeps the session and explains the origin check. A conflict refreshes the context while retaining the editing draft for review.
 
+## Languages
+
+The header offers **English**, **Español** and **Valencià**. English is the default and fallback language, independent of the browser's language. Your choice is saved under `lili-language` in local storage and restored after reloads, including the return from Google sign-in. If storage is unavailable, changing language still works for the current page.
+
+Valencian uses the registered [BCP 47 variant `ca-valencia`](https://www.iana.org/assignments/lang-subtags-templates/valencia.txt), with its own translations. Labels, accessible names, validation, application errors, notices and dates follow the selected language; switching keeps open forms, task selection and filters. Task names, descriptions and messages supplied directly by the API keep their original text. Dates still use the API's Madrid calendar rules, with an absent time kept distinct from midnight. The page's `lang` and description also follow the choice.
+
+Translations are bundled locally through i18next and react-i18next. Catalogs live under `src/shared/i18n/labels/`, grouped first by language (`en/`, `es/`, `ca-valencia/`) and then by section (`app.ts`, `auth.ts`, `common.ts`, `tasks.ts`). Task validation, errors and notices are included in each language's `tasks.ts`. Add keys to the English section and both translations together: TypeScript checks matching structures and translation keys. `src/shared/i18n/i18n.ts` registers the sections as namespaces. No translation service or additional account is needed.
+
 ## Visual identity
 
-The interface applies the [visual identity](docs/identidad-visual.md): purple accents, neutral surfaces, Spanish copy, and Material UI components. The original transparent purple symbol is included in the header and browser favicon. Typography uses system fonts; Inter remains a candidate for a later visual review.
+The interface applies the [visual identity](docs/identidad-visual.md): purple accents, neutral surfaces, natural language, and Material UI components. The original transparent purple symbol is included in the header and browser favicon. Typography uses system fonts; Inter remains a candidate for a later visual review.
 
 Appearance offers light, dark and system modes. Material UI stores this preference under the existing `lili-color-mode` and `lili-color-scheme` keys and synchronizes it across tabs. Both themes share the central tokens in `src/app/theme.ts`. The responsive detail and forms become full-screen dialogs on small displays.
 
@@ -48,6 +56,7 @@ Appearance offers light, dark and system modes. Material UI stores this preferen
 - `src/tasks/components/page/tasks-page.tsx` composes the list, view controls and three task dialogs.
 - `src/tasks/` owns its contracts and enums, API adapter, read and mutation hooks, list, filters, detail, forms, and presentation helpers. Tests live next to their behavior.
 - `src/shared/http/` contains the small HTTP client and readable error handling used by both features.
+- `src/shared/i18n/` configures English, Spanish and Valencian; `labels/` groups translation catalogs by language and section.
 - `test/setup.ts` cleans up component tests; `test/tasks/` contains task browser flows.
 - `public/lili-symbol.png` preserves the original logo, shared by the header and favicon.
 
@@ -61,7 +70,7 @@ The project uses strict TypeScript, ESM, React, React Router, Vite, Material UI 
 pnpm run ci
 ```
 
-This runs lint, formatting, type checks, build and Vitest with V8 coverage. Tests cover session-aware redirects, task selection and browser history, the HTTP contract and `204`, query serialization, session lifecycle, Madrid date serialization, partial updates, validation, terminal and family status controls, and discarded late responses.
+This runs lint, formatting, type checks, build and Vitest with V8 coverage. Tests cover language fallback, pluralization, localized dates and messages, session-aware redirects, task selection and browser history, the HTTP contract and `204`, query serialization, session lifecycle, Madrid date serialization, partial updates, validation, terminal and family status controls, and discarded late responses.
 
 Browser checks use Playwright Chromium in desktop and mobile sizes with light and dark themes:
 
@@ -76,7 +85,7 @@ The browser suite starts Vite or uses an existing server at port 5173. Most flow
 RUN_LIVE_API=true pnpm test:browser
 ```
 
-The browser flows exercise login redirects and reloads, task detail reloads and back/forward navigation, task and subtask management, cancellation refresh, filtered family navigation, session expiration, successful saves followed by failed reads, and the favicon. Run CI and browser checks separately. Coverage is printed in the console; temporary test files stay under `node_modules/.cache/`.
+The browser flows exercise the English default, language switching and persistence, login redirects and reloads, task detail reloads and back/forward navigation, task and subtask management, cancellation refresh, filtered family navigation, session expiration, successful saves followed by failed reads, and the favicon. Run CI and browser checks separately. Coverage is printed in the console; temporary test files stay under `node_modules/.cache/`.
 
 The [implementation plan](docs/plan-implementacion-frontend.md) is implemented at the frontend level. Remaining checks are real Google sign-in, authenticated writes with real cookies and Origin, Gmail receipt, and production hosting. Complete keyboard navigation and focus restoration, and recovery from an invalid Madrid daylight-saving time also need explicit verification.
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { getErrorMessage } from '#src/shared/http/error-message.js';
 import { HttpError } from '#src/shared/http/http-client.js';
@@ -41,19 +42,28 @@ type TaskActionsOptions = {
   onUnauthorized: () => void;
 };
 
+type MutationError =
+  { kind: 'failure'; error: unknown } | { kind: 'uncertainCreation' };
+type TaskNotice =
+  | { key: 'created' | 'saved'; reminder: boolean; filtered: boolean }
+  | { key: 'statusUpdated' | 'deleted' };
+
 export function useTaskActions({
   filtered,
   selectTask,
   refresh,
   onUnauthorized,
 }: TaskActionsOptions): TaskActions {
+  const { t } = useTranslation('tasks');
   const [editor, setEditor] = useState<TaskEditor | null>(null);
   const [confirmation, setConfirmation] = useState<TaskConfirmation | null>(
     null,
   );
   const [busy, setBusy] = useState(false);
-  const [mutationError, setMutationError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<MutationError | null>(
+    null,
+  );
+  const [notice, setNotice] = useState<TaskNotice | null>(null);
   const [uncertainCreation, setUncertainCreation] =
     useState<UncertainCreation | null>(null);
   const active = useRef(false);
@@ -127,7 +137,7 @@ export function useTaskActions({
       onUnauthorized();
       return;
     }
-    setMutationError(getErrorMessage(error));
+    setMutationError({ kind: 'failure', error });
     if (
       error instanceof HttpError &&
       (error.status === 409 || error.status === 404)
@@ -149,9 +159,11 @@ export function useTaskActions({
       if (!active.current) return;
       setEditor(null);
       setUncertainCreation(null);
-      setNotice(
-        `${editor.kind === 'create' ? 'Tarea creada.' : 'Cambios guardados.'}${saved.reminder ? ' Recordatorio guardado.' : ''}${filtered ? ' La consulta actual puede excluir esta tarea; puedes verla en el detalle.' : ''}`,
-      );
+      setNotice({
+        key: editor.kind === 'create' ? 'created' : 'saved',
+        reminder: saved.reminder !== null,
+        filtered,
+      });
       selectTask(saved.uuid);
       refresh();
     } catch (error) {
@@ -165,9 +177,7 @@ export function useTaskActions({
           (error.status >= 200 && error.status < 300))
       ) {
         setUncertainCreation({ tasks: null, checking: false });
-        setMutationError(
-          'No se ha recibido una confirmación. La tarea podría haberse creado. Comprueba la lista antes de intentarlo otra vez.',
-        );
+        setMutationError({ kind: 'uncertainCreation' });
       }
     } finally {
       writing.current = false;
@@ -199,9 +209,7 @@ export function useTaskActions({
       await tasksApi.updateStatus(task.uuid, status);
       if (!active.current) return;
       setConfirmation(null);
-      setNotice(
-        'Estado actualizado. Los avisos pendientes se anulan al completar o cancelar.',
-      );
+      setNotice({ key: 'statusUpdated' });
       refresh();
     } catch (error) {
       handleError(error);
@@ -223,7 +231,7 @@ export function useTaskActions({
       setConfirmation(null);
       setEditor(null);
       selectTask(null);
-      setNotice('Tarea eliminada. Sus avisos pendientes se han anulado.');
+      setNotice({ key: 'deleted' });
       refresh();
     } catch (error) {
       handleError(error);
@@ -237,8 +245,24 @@ export function useTaskActions({
     editor,
     confirmation,
     busy,
-    mutationError,
-    notice,
+    mutationError:
+      mutationError === null
+        ? null
+        : mutationError.kind === 'uncertainCreation'
+          ? t('feedback.errors.uncertainCreation')
+          : getErrorMessage(mutationError.error),
+    notice:
+      notice === null
+        ? null
+        : 'reminder' in notice
+          ? [
+              t(`feedback.notices.${notice.key}`),
+              notice.reminder && t('feedback.notices.reminderSaved'),
+              notice.filtered && t('feedback.notices.filtered'),
+            ]
+              .filter(Boolean)
+              .join(' ')
+          : t(`feedback.notices.${notice.key}`),
     uncertainCreation,
     openEditor,
     closeEditor,

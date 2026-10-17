@@ -1,3 +1,4 @@
+import { i18n } from '#src/shared/i18n/i18n.js';
 import type {
   CreateTaskInput,
   Task,
@@ -94,10 +95,10 @@ function validateDate(value: TaskDateDraft): string | undefined {
   if (value.date === '') {
     return value.time === ''
       ? undefined
-      : 'Indica un día antes de añadir la hora.';
+      : i18n.t('tasks:feedback.validation.dayBeforeTime');
   }
   const match = /^(\d{4})-(\d{2})-(\d{2})$/u.exec(value.date);
-  if (match === null) return 'Indica una fecha válida.';
+  if (match === null) return i18n.t('tasks:feedback.validation.invalidDate');
   const year = Number(match[1]);
   const month = Number(match[2]);
   const day = Number(match[3]);
@@ -117,9 +118,9 @@ function validateDate(value: TaskDateDraft): string | undefined {
     31,
   ];
   if (year < 1 || day < 1 || day > (daysInMonth[month - 1] ?? 0))
-    return 'Indica una fecha válida.';
+    return i18n.t('tasks:feedback.validation.invalidDate');
   if (value.time !== '' && !/^(?:[01]\d|2[0-3]):[0-5]\d$/u.test(value.time))
-    return 'Indica una hora válida con horas y minutos.';
+    return i18n.t('tasks:feedback.validation.invalidTime');
   return undefined;
 }
 
@@ -129,13 +130,13 @@ export function validateTaskDraft(
 ): TaskFormErrors {
   const errors: TaskFormErrors = {};
   if (draft.name.trim() === '')
-    errors.name = 'Escribe un nombre para la tarea.';
+    errors.name = i18n.t('tasks:feedback.validation.nameRequired');
   for (const field of ['start', 'end', 'reminder'] as const) {
     const error = validateDate(draft[field]);
     if (error !== undefined) errors[field] = error;
   }
   if (original?.status === TaskStatus.SCHEDULED && draft.start.date === '')
-    errors.start = 'Una tarea programada necesita un día de inicio.';
+    errors.start = i18n.t('tasks:feedback.validation.scheduledStart');
 
   if (
     errors.start === undefined &&
@@ -148,7 +149,7 @@ export function validateTaskDraft(
         draft.end.time !== '' &&
         draft.end.time < draft.start.time))
   ) {
-    errors.end = 'El fin no puede ser anterior al inicio.';
+    errors.end = i18n.t('tasks:feedback.validation.endBeforeStart');
   }
   return errors;
 }

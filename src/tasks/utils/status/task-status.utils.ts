@@ -1,3 +1,4 @@
+import { i18n } from '#src/shared/i18n/i18n.js';
 import type { Task } from '#src/tasks/types/task.types.js';
 import { taskStatusLabels } from '#src/tasks/types/task-labels.js';
 import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
@@ -23,19 +24,26 @@ export function getStatusChangeReason(
 ): string | null {
   if (target === task.status) return null;
   if (isTerminalStatus(task.status)) {
-    return 'Las tareas completadas y canceladas son de solo lectura.';
+    return i18n.t('tasks:statusReasons.terminal');
   }
   if (target === TaskStatus.SCHEDULED && task.start === null) {
-    return 'Para programar la tarea, añade primero una fecha de inicio.';
+    return i18n.t('tasks:statusReasons.startRequired');
   }
 
   if (task.parentUuid !== null) {
     const parent = family.find((item) => item.uuid === task.parentUuid);
     if (!parent) {
-      return 'No se ha podido cargar la principal. Recarga antes de cambiar el estado.';
+      return i18n.t('tasks:statusReasons.parentUnavailable');
     }
     if (!allowedSubtaskStatuses[parent.status].includes(target)) {
-      return `El estado ${taskStatusLabels[target].toLowerCase()} no es compatible con la principal ${taskStatusLabels[parent.status].toLowerCase()}.`;
+      return i18n.t('tasks:statusReasons.parentIncompatible', {
+        status: taskStatusLabels[target].toLocaleLowerCase(
+          i18n.resolvedLanguage,
+        ),
+        parentStatus: taskStatusLabels[parent.status].toLocaleLowerCase(
+          i18n.resolvedLanguage,
+        ),
+      });
     }
     return null;
   }
@@ -43,7 +51,7 @@ export function getStatusChangeReason(
   const subtasks = family.filter((item) => item.parentUuid === task.uuid);
   if (target === TaskStatus.CANCELLED) {
     return subtasks.some((item) => item.status === TaskStatus.COMPLETED)
-      ? 'No se puede cancelar una tarea que tiene subtareas completadas.'
+      ? i18n.t('tasks:statusReasons.completedSubtasks')
       : null;
   }
   if (
@@ -52,8 +60,12 @@ export function getStatusChangeReason(
     )
   ) {
     return target === TaskStatus.COMPLETED
-      ? 'Para completar la tarea, completa o cancela todas sus subtareas.'
-      : `Hay subtareas incompatibles con el estado ${taskStatusLabels[target].toLowerCase()}. Revisa sus estados primero.`;
+      ? i18n.t('tasks:statusReasons.finishSubtasks')
+      : i18n.t('tasks:statusReasons.subtasksIncompatible', {
+          status: taskStatusLabels[target].toLocaleLowerCase(
+            i18n.resolvedLanguage,
+          ),
+        });
   }
 
   return null;

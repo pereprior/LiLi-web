@@ -10,6 +10,7 @@ import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import type { ReactElement, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type {
   TaskContext,
@@ -37,6 +38,7 @@ export function TaskDetailDialog({
   onReload,
   children,
 }: TaskDetailDialogProps): ReactElement {
+  const { t } = useTranslation('tasks');
   const fullScreen = useMediaQuery(useTheme().breakpoints.down('sm'));
   return (
     <Dialog
@@ -47,14 +49,14 @@ export function TaskDetailDialog({
       fullScreen={fullScreen}
       aria-labelledby="task-detail-title"
     >
-      <DialogTitle id="task-detail-title">Detalle de tarea</DialogTitle>
+      <DialogTitle id="task-detail-title">{t('detail.title')}</DialogTitle>
       <DialogContent>
         <Stack spacing={3}>
           {error && <Alert severity="error">{error}</Alert>}
           {detail.status === 'loading' && (
             <Stack direction="row" spacing={2} role="status" sx={{ py: 3 }}>
               <CircularProgress size={24} />
-              <Typography>Cargando detalle y subtareas…</Typography>
+              <Typography>{t('detail.loading')}</Typography>
             </Stack>
           )}
           {detail.status === 'error' && (
@@ -62,16 +64,12 @@ export function TaskDetailDialog({
               severity="error"
               action={
                 <Button color="inherit" onClick={onReload}>
-                  Reintentar
+                  {t('actions.retry')}
                 </Button>
               }
             >
-              {saved
-                ? 'La operación se guardó, pero no se pudo actualizar el detalle. No la repitas. '
-                : ''}
-              {detail.code === 404
-                ? 'La tarea ya no está disponible. Vuelve a la lista o recarga.'
-                : detail.message}
+              {saved ? `${t('detail.savedRefreshError')} ` : ''}
+              {detail.code === 404 ? t('detail.unavailable') : detail.message}
             </Alert>
           )}
           {children}
@@ -79,7 +77,7 @@ export function TaskDetailDialog({
       </DialogContent>
       <DialogActions>
         <Button disabled={busy} onClick={onClose}>
-          Volver a la lista
+          {t('actions.backToList')}
         </Button>
       </DialogActions>
     </Dialog>

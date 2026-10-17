@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { Task } from '#src/tasks/types/task.types.js';
 import {
@@ -47,6 +48,7 @@ export function TaskDetail({
   onChangeStatus,
   onDelete,
 }: TaskDetailProps): ReactElement {
+  const { t, i18n } = useTranslation('tasks');
   const terminal = isTerminalStatus(task.status);
   const parent = family.find((item) => item.uuid === task.parentUuid);
   const subtasks = family.filter((item) => item.parentUuid === task.uuid);
@@ -70,7 +72,9 @@ export function TaskDetail({
               }}
               sx={{ mb: 1 }}
             >
-              Ver principal{parent ? `: ${parent.name}` : ''}
+              {parent
+                ? t('detail.viewNamedParent', { name: parent.name })
+                : t('detail.viewParent')}
             </Button>
           )}
           <Typography
@@ -89,15 +93,19 @@ export function TaskDetail({
           >
             <Chip label={taskStatusLabels[task.status]} variant="outlined" />
             <Chip
-              label={`Prioridad ${taskPriorityLabels[task.priority].toLowerCase()}`}
+              label={t('labels.priorityWithValue', {
+                priority: taskPriorityLabels[task.priority].toLocaleLowerCase(
+                  i18n.resolvedLanguage,
+                ),
+              })}
             />
           </Stack>
         </Box>
 
         <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
           {task.description === null
-            ? 'Sin descripción'
-            : task.description || 'Descripción vacía'}
+            ? t('detail.noDescription')
+            : task.description || t('detail.emptyDescription')}
         </Typography>
 
         <Box
@@ -112,45 +120,41 @@ export function TaskDetail({
           }}
         >
           <Typography component="dt" color="text.secondary">
-            Inicio
+            {t('dates.start.label')}
           </Typography>
           <Typography component="dd">{formatTaskDate(task.start)}</Typography>
           <Typography component="dt" color="text.secondary">
-            Fin
+            {t('dates.end.label')}
           </Typography>
           <Typography component="dd">{formatTaskDate(task.end)}</Typography>
           <Typography component="dt" color="text.secondary">
-            Recordatorio
+            {t('dates.reminder.label')}
           </Typography>
           <Typography component="dd">
             {formatTaskDate(task.reminder)}
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary">
-          Todas las horas se interpretan en Madrid (Europe/Madrid).
+          {t('detail.timezoneHelp')}
         </Typography>
         {task.reminder !== null && (
           <Alert severity="info">
-            Recordatorio guardado para {email}.{' '}
+            {t('detail.reminderRecipient', { email })}{' '}
             {task.reminder.time === null
-              ? 'Sin hora, se programa a las 06:00 de Madrid. '
+              ? `${t('detail.reminderWithoutTime')} `
               : ''}
-            La fecha guardada no confirma el envío ni la recepción del correo.
-            {terminal
-              ? ' Esta tarea está cerrada y su recordatorio es de solo lectura.'
-              : ''}
+            {t('detail.reminderDeliveryHelp')}
+            {terminal ? ` ${t('detail.terminalReminder')}` : ''}
           </Alert>
         )}
 
         {terminal ? (
-          <Alert severity="info">
-            Esta tarea es de solo lectura. Puedes consultarla o eliminarla.
-          </Alert>
+          <Alert severity="info">{t('detail.readOnly')}</Alert>
         ) : (
           <Stack spacing={2}>
             <TextField
               select
-              label="Estado"
+              label={t('detail.status')}
               value={task.status}
               disabled={busy}
               slotProps={{ select: { native: true } }}
@@ -166,7 +170,7 @@ export function TaskDetail({
                   onChangeStatus(selected.status);
                 }
               }}
-              helperText="Los estados se cambian manualmente; las fechas no los cambian."
+              helperText={t('detail.statusHelp')}
             >
               {statuses.map(({ status, reason }) => (
                 <option
@@ -183,7 +187,7 @@ export function TaskDetail({
               <Box
                 component="ul"
                 sx={{ m: 0, pl: 2.5 }}
-                aria-label="Condiciones del cambio de estado"
+                aria-label={t('detail.statusConditions')}
               >
                 {reasons.map((reason) => (
                   <Typography
@@ -199,13 +203,12 @@ export function TaskDetail({
             )}
             {task.start === null && (
               <Button onClick={onEdit} disabled={busy} variant="outlined">
-                Añadir inicio para programar
+                {t('detail.addStart')}
               </Button>
             )}
             {task.parentUuid === null && subtasks.length > 0 && (
               <Typography variant="body2" color="text.secondary">
-                Al cancelar esta tarea se cancelarán también sus subtareas, tras
-                confirmar la operación.
+                {t('detail.cancelSubtasksHelp')}
               </Typography>
             )}
           </Stack>
@@ -215,14 +218,14 @@ export function TaskDetail({
           <Box>
             <Divider sx={{ mb: 2 }} />
             <Typography component="h3" variant="subtitle1" gutterBottom>
-              Subtareas ({subtasks.length})
+              {t('detail.subtasksCount', { count: subtasks.length })}
             </Typography>
             {subtasks.length === 0 ? (
               <Typography color="text.secondary" variant="body2">
-                Todavía no hay subtareas.
+                {t('detail.noSubtasks')}
               </Typography>
             ) : (
-              <List disablePadding aria-label="Subtareas">
+              <List disablePadding aria-label={t('detail.subtasks')}>
                 {subtasks.map((subtask) => (
                   <ListItem key={subtask.uuid} disablePadding>
                     <ListItemButton
@@ -235,8 +238,12 @@ export function TaskDetail({
                           {subtask.name}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {taskStatusLabels[subtask.status]} · Prioridad{' '}
-                          {taskPriorityLabels[subtask.priority].toLowerCase()}
+                          {t('detail.subtaskSummary', {
+                            status: taskStatusLabels[subtask.status],
+                            priority: taskPriorityLabels[
+                              subtask.priority
+                            ].toLocaleLowerCase(i18n.resolvedLanguage),
+                          })}
                         </Typography>
                       </Stack>
                     </ListItemButton>
@@ -246,7 +253,7 @@ export function TaskDetail({
             )}
             {!terminal && (
               <Button onClick={onCreateSubtask} disabled={busy} sx={{ mt: 1 }}>
-                Añadir subtarea
+                {t('actions.addSubtask')}
               </Button>
             )}
           </Box>
@@ -260,11 +267,11 @@ export function TaskDetail({
         >
           {!terminal && (
             <Button variant="contained" onClick={onEdit} disabled={busy}>
-              Editar tarea
+              {t('actions.editTask')}
             </Button>
           )}
           <Button color="error" onClick={onDelete} disabled={busy}>
-            Eliminar tarea
+            {t('actions.deleteTask')}
           </Button>
         </Stack>
       </Stack>

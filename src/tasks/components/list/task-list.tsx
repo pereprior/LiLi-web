@@ -9,6 +9,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { Task } from '#src/tasks/types/task.types.js';
 import {
@@ -34,24 +35,21 @@ export function TaskList({
   onClearFilters,
   onCreate,
 }: TaskListProps): ReactElement {
+  const { t, i18n } = useTranslation('tasks');
   if (tasks.length === 0) {
     return (
       <Paper variant="outlined" sx={{ p: 5, textAlign: 'center' }}>
         <Typography variant="h6" component="h2" gutterBottom>
-          {filtered
-            ? 'No hay coincidencias'
-            : 'Un poco de espacio para organizarte'}
+          {filtered ? t('list.noMatches') : t('list.emptyTitle')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          {filtered
-            ? 'Prueba con otra búsqueda o limpia los filtros.'
-            : 'Añade tu primera tarea y deja que LiLi te ayude a tenerla presente.'}
+          {filtered ? t('list.noMatchesHelp') : t('list.emptyHelp')}
         </Typography>
         <Button
           variant="contained"
           onClick={filtered ? onClearFilters : onCreate}
         >
-          {filtered ? 'Limpiar filtros' : 'Añadir tarea'}
+          {filtered ? t('filters.clear') : t('actions.addTask')}
         </Button>
       </Paper>
     );
@@ -59,7 +57,7 @@ export function TaskList({
 
   return (
     <Paper variant="outlined">
-      <List disablePadding aria-label="Tareas">
+      <List disablePadding aria-label={t('list.label')}>
         {tasks.map((task, index) => (
           <Box key={task.uuid}>
             {index > 0 && <Divider />}
@@ -93,7 +91,11 @@ export function TaskList({
                         variant="outlined"
                       />
                       <Chip
-                        label={`Prioridad ${taskPriorityLabels[task.priority].toLowerCase()}`}
+                        label={t('labels.priorityWithValue', {
+                          priority: taskPriorityLabels[
+                            task.priority
+                          ].toLocaleLowerCase(i18n.resolvedLanguage),
+                        })}
                         size="small"
                       />
                     </Stack>
@@ -105,22 +107,24 @@ export function TaskList({
                   >
                     {task.parentUuid && (
                       <Typography variant="body2" color="primary">
-                        Subtarea · ver principal en el detalle
+                        {t('list.subtaskHelp')}
                       </Typography>
                     )}
                     {task.start && (
                       <Typography variant="body2" color="text.secondary">
-                        Inicio: {formatTaskDate(task.start)}
+                        {t('list.start', { date: formatTaskDate(task.start) })}
                       </Typography>
                     )}
                     {task.end && (
                       <Typography variant="body2" color="text.secondary">
-                        Fin: {formatTaskDate(task.end)}
+                        {t('list.end', { date: formatTaskDate(task.end) })}
                       </Typography>
                     )}
                     {task.reminder && (
                       <Typography variant="body2" color="text.secondary">
-                        Recordatorio: {formatTaskDate(task.reminder)}
+                        {t('list.reminder', {
+                          date: formatTaskDate(task.reminder),
+                        })}
                       </Typography>
                     )}
                   </Stack>

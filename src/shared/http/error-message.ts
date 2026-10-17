@@ -1,15 +1,17 @@
 import { HttpError } from '#src/shared/http/http-client.js';
+import { i18n } from '#src/shared/i18n/i18n.js';
 
 export function getErrorMessage(error: unknown): string {
   if (error instanceof HttpError) {
-    if (error.status === 403)
-      return 'La operación se ha rechazado. Comprueba que el origen de la web esté permitido en la API.';
-    if (error.status === 404)
-      return 'La tarea o su principal ya no están disponibles. Vuelve a la lista o recarga.';
+    if (error.status === 403) return i18n.t('common:errors.forbidden');
+    if (error.status === 404) return i18n.t('common:errors.notFound');
     if (error.status === 409)
-      return `La operación entra en conflicto con el estado actual. Hemos solicitado datos actualizados; revisa la tarea y sus subtareas antes de repetirla. ${error.message}`;
+      return i18n.t('common:errors.conflict', {
+        details: error.localizedMessage,
+      });
+    return error.localizedMessage;
   }
   if (error instanceof Error && error.message.trim()) return error.message;
 
-  return 'No se ha podido completar la operación. Vuelve a intentarlo.';
+  return i18n.t('common:errors.unknown');
 }

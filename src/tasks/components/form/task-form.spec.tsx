@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -7,6 +8,7 @@ import {
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { i18n } from '#src/shared/i18n/i18n.js';
 import { TaskForm } from '#src/tasks/components/form/task-form.js';
 import type { Task } from '#src/tasks/types/task.types.js';
 import { TaskPriority } from '#src/tasks/types/task-priority.enum.js';
@@ -93,6 +95,31 @@ describe('TaskForm', () => {
         reminder: '2026-10-15',
       }),
     );
+  });
+
+  it('translates validation while keeping the entered draft', async () => {
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    render(
+      <TaskForm
+        onSubmit={onSubmit}
+        onCancel={vi.fn()}
+        submitting={false}
+        error={null}
+      />,
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: 'Descripción' }), {
+      target: { value: 'My family plan' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Crear tarea' }));
+    expect(screen.getByText('Escribe un nombre para la tarea.')).toBeVisible();
+
+    await act(() => i18n.changeLanguage('en'));
+
+    expect(screen.getByText('Enter a task name.')).toBeVisible();
+    expect(screen.getByRole('textbox', { name: 'Description' })).toHaveValue(
+      'My family plan',
+    );
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it('preserves a draft and its PATCH baseline when a refreshed task arrives', async () => {

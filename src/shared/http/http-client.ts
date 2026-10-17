@@ -1,33 +1,55 @@
+import { i18n } from '#src/shared/i18n/i18n.js';
+import type { common } from '#src/shared/i18n/labels/en/common.js';
+
+type HttpMessageKey = keyof typeof common.http;
+
 export class HttpError extends Error {
+  public readonly messages: string[];
+  readonly #translationKey: HttpMessageKey | undefined;
+
   constructor(
     public readonly status: number,
-    public readonly messages: string[],
+    messages: string[],
+    translationKey?: HttpMessageKey,
   ) {
-    super(messages.join(' ') || defaultErrorMessage(status));
+    const key =
+      translationKey ??
+      (messages.length === 0 ? defaultErrorKey(status) : undefined);
+    const readableMessages =
+      key === undefined ? messages : [i18n.t(`common:http.${key}`)];
+    super(readableMessages.join(' '));
+    this.messages = readableMessages;
+    this.#translationKey = key;
     this.name = 'HttpError';
   }
-}
 
-function defaultErrorMessage(status: number): string {
-  switch (status) {
-    case 0:
-      return 'No se ha podido conectar con LiLi. Comprueba la conexión y vuelve a intentarlo.';
-    case 400:
-      return 'Revisa los datos de la petición.';
-    case 401:
-      return 'La sesión ha caducado. Vuelve a entrar con Google.';
-    case 403:
-      return 'La operación se ha rechazado. Comprueba la configuración del origen permitido.';
-    case 404:
-      return 'La tarea ya no está disponible.';
-    case 409:
-      return 'La tarea ha cambiado o la operación entra en conflicto con su estado. Recarga y revisa los datos.';
-    default:
-      return 'LiLi no ha podido completar la petición. Vuelve a intentarlo.';
+  public get localizedMessage(): string {
+    return this.#translationKey === undefined
+      ? this.message
+      : i18n.t(`common:http.${this.#translationKey}`);
   }
 }
 
-function readErrorMessages(value: unknown, status: number): string[] {
+function defaultErrorKey(status: number): HttpMessageKey {
+  switch (status) {
+    case 0:
+      return 'connection';
+    case 400:
+      return 'invalidRequest';
+    case 401:
+      return 'unauthorized';
+    case 403:
+      return 'forbidden';
+    case 404:
+      return 'notFound';
+    case 409:
+      return 'conflict';
+    default:
+      return 'requestFailed';
+  }
+}
+
+function readErrorMessages(value: unknown): string[] {
   if (typeof value === 'object' && value !== null && 'message' in value) {
     const message = value.message;
     const messages = typeof message === 'string' ? [message] : message;
@@ -41,7 +63,7 @@ function readErrorMessages(value: unknown, status: number): string[] {
     }
   }
 
-  return [defaultErrorMessage(status)];
+  return [];
 }
 
 export async function request<T>(
@@ -66,9 +88,7 @@ export async function request<T>(
 
     if (response.status === 204 && response.ok) {
       if (validate !== undefined) {
-        throw new HttpError(response.status, [
-          'La respuesta del servidor no tiene el formato esperado.',
-        ]);
+        throw new HttpError(response.status, [], 'invalidResponse');
       }
       return undefined as T;
     }
@@ -78,24 +98,19 @@ export async function request<T>(
     try {
       value = JSON.parse(text) as unknown;
     } catch {
-      throw new HttpError(response.status, [
-        response.ok
-          ? 'La respuesta del servidor no tiene el formato esperado.'
-          : defaultErrorMessage(response.status),
-      ]);
-    }
-
-    if (!response.ok) {
       throw new HttpError(
         response.status,
-        readErrorMessages(value, response.status),
+        [],
+        response.ok ? 'invalidResponse' : defaultErrorKey(response.status),
       );
     }
 
+    if (!response.ok) {
+      throw new HttpError(response.status, readErrorMessages(value));
+    }
+
     if (validate !== undefined && !validate(value)) {
-      throw new HttpError(response.status, [
-        'La respuesta del servidor no tiene el formato esperado.',
-      ]);
+      throw new HttpError(response.status, [], 'invalidResponse');
     }
 
     return value as T;
@@ -111,6 +126,6 @@ export async function request<T>(
       throw error;
     }
 
-    throw new HttpError(0, [defaultErrorMessage(0)]);
+    throw new HttpError(0, []);
   }
 }

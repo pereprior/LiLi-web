@@ -7,10 +7,12 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { lazy, type ReactElement, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, Route, Routes, useLocation } from 'react-router';
 
 import { AppearanceSelector } from '#src/app/components/appearance/appearance-selector.js';
 import { Brand } from '#src/app/components/branding/brand.js';
+import { LanguageSelector } from '#src/app/components/language/language-selector.js';
 import { LoginScreen } from '#src/auth/components/login/login-screen.js';
 import { useSession } from '#src/auth/hooks/session/use-session.js';
 
@@ -21,6 +23,7 @@ const TasksPage = lazy(() =>
 );
 
 export function App(): ReactElement {
+  const { t } = useTranslation('app');
   const session = useSession();
   const location = useLocation();
 
@@ -41,7 +44,7 @@ export function App(): ReactElement {
           },
         }}
       >
-        Saltar al contenido
+        {t('skipToContent')}
       </Box>
       <Container maxWidth="lg">
         <Stack
@@ -61,6 +64,7 @@ export function App(): ReactElement {
             sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1 }}
           >
             <AppearanceSelector />
+            <LanguageSelector />
             {session.state.status === 'authenticated' && (
               <>
                 <Typography
@@ -74,7 +78,7 @@ export function App(): ReactElement {
                   disabled={session.loggingOut}
                   onClick={() => void session.logout()}
                 >
-                  {session.loggingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
+                  {session.loggingOut ? t('loggingOut') : t('logout')}
                 </Button>
               </>
             )}
@@ -104,7 +108,7 @@ export function App(): ReactElement {
                       fallback={
                         <Stack direction="row" spacing={2} role="status">
                           <CircularProgress size={24} />
-                          <Typography>Abriendo tus tareas…</Typography>
+                          <Typography>{t('openingTasks')}</Typography>
                         </Stack>
                       }
                     >
