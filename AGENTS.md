@@ -1,6 +1,6 @@
 # LiLi Web Agent Guidelines
 
-LiLi Web is the React interface for the sibling LiLi API. Use TypeScript, React, Vite, Material UI, ESM, Node.js 24 or later, and pnpm. Material UI is the chosen UI library; it has not been installed yet.
+LiLi Web is the React interface for the sibling LiLi API. Use TypeScript, React, Vite, Material UI, ESM, Node.js 24 or later, and pnpm. Material UI is installed with Emotion as its styling engine.
 
 - Keep the frontend organized by feature. `src/app/` composes the interface; future features own their components, API interactions, and tests.
 - Keep application business rules in the API. Do not import backend source or expose credentials to the browser.
