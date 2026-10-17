@@ -3,8 +3,11 @@ import Stack from '@mui/material/Stack';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { TaskFilters, TaskView } from '#src/tasks/types/task.types.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
+import type {
+  TaskFilters,
+  TaskView,
+} from '#src/tasks/types/find-task-options.type.js';
 
 type View = TaskView | 'all' | 'closed';
 const views: View[] = ['all', 'overdue', 'today', 'upcoming', 'closed'];

@@ -1,6 +1,6 @@
 import { i18n } from '#src/shared/i18n/i18n.js';
-import { TaskPriority } from '#src/tasks/types/task-priority.enum.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
+import { TaskPriority } from '#src/tasks/types/enum/task-priority.enum.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
 
 export const taskStatusLabels: Record<TaskStatus, string> = {
   get [TaskStatus.PENDING](): string {

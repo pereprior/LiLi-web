@@ -11,12 +11,12 @@ import Typography from '@mui/material/Typography';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { Task } from '#src/tasks/types/task.types.js';
+import type { Task } from '#src/tasks/types/task.type.js';
+import { formatTaskDate } from '#src/tasks/utils/task-display.utils.js';
 import {
   taskPriorityLabels,
   taskStatusLabels,
-} from '#src/tasks/types/task-labels.js';
-import { formatTaskDate } from '#src/tasks/utils/dates/task-display.utils.js';
+} from '#src/tasks/utils/task-labels.utils.js';
 
 type TaskListProps = {
   tasks: Task[];

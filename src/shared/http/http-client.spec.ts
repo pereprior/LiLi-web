@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { HttpError, request } from '#src/shared/http/http-client.js';
+import { HttpError } from '#src/shared/errors/http.error.js';
+import { request } from '#src/shared/http/http-client.js';
 
 describe('request', () => {
   const fetchMock = vi.fn<typeof fetch>();

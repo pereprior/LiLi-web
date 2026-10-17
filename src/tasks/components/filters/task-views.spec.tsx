@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { TaskViews } from '#src/tasks/components/filters/task-views.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
 
 describe('TaskViews', () => {
   it('replaces manual date and status filters while keeping search and order', async () => {

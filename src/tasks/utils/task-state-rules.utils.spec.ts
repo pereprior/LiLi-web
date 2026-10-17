@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Task } from '#src/tasks/types/task.types.js';
-import { TaskPriority } from '#src/tasks/types/task-priority.enum.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
+import { TaskPriority } from '#src/tasks/types/enum/task-priority.enum.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
+import type { Task } from '#src/tasks/types/task.type.js';
 import {
   getStatusChangeReason,
   isTerminalStatus,
-} from '#src/tasks/utils/status/task-status.utils.js';
+} from '#src/tasks/utils/task-state-rules.utils.js';
 
 describe('task status restrictions', () => {
   it.each(Object.values(TaskStatus))(

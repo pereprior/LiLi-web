@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { authApi } from '#src/auth/api/auth.api.js';
 import type { User } from '#src/auth/types/user.type.js';
-import { HttpError } from '#src/shared/http/http-client.js';
+import { HttpError } from '#src/shared/errors/http.error.js';
 
 type SessionState =
   | { status: 'checking' }

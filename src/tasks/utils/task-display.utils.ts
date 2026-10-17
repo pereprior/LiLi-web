@@ -1,5 +1,5 @@
 import { i18n } from '#src/shared/i18n/i18n.js';
-import type { TaskDate } from '#src/tasks/types/task.types.js';
+import type { TaskDate } from '#src/tasks/types/task-date.type.js';
 
 export function formatTaskDate(value: TaskDate | null): string {
   if (!value) return i18n.t('tasks:dates.none');

@@ -8,7 +8,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { TaskConfirmation } from '#src/tasks/hooks/actions/use-task-actions.js';
+import type { TaskConfirmation } from '#src/tasks/types/task-actions.type.js';
 
 type TaskConfirmationDialogProps = {
   confirmation: TaskConfirmation | null;

@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { authApi } from '#src/auth/api/auth.api.js';
 import { useSession } from '#src/auth/hooks/session/use-session.js';
 import type { User } from '#src/auth/types/user.type.js';
-import { HttpError } from '#src/shared/http/http-client.js';
+import { HttpError } from '#src/shared/errors/http.error.js';
 import { i18n } from '#src/shared/i18n/i18n.js';
 
 vi.mock('#src/auth/api/auth.api.js', () => ({

@@ -13,6 +13,20 @@ LiLi Web is the React interface for the sibling LiLi API. Use TypeScript, React,
 - After changes, run relevant tests, type-checking, linting, and formatting. Use `pnpm run ci` for substantial changes. Report verification limits and leave unrelated failures outside the task.
 - Keep the README accurate to implemented behavior and accessible to someone unfamiliar with LiLi.
 
+## Architecture shared with LiLi API
+
+- Use the same feature ownership and vocabulary as the sibling API: `auth/`, `tasks/`, and genuinely shared code under `shared/`. `app/` owns frontend composition and routing.
+- Keep each responsibility recognizable: `components/` renders the interface, `hooks/` coordinates React state and requests, and `api/` owns HTTP operations. Components must not call `fetch` directly.
+- Name task HTTP operations `findAll`, `findByUuid`, `create`, `updateDetails`, `updateStatus`, and `delete`, matching the API controller. These are frontend adapters to the existing endpoints, not new backend services.
+- Group a hook and its tests under `hooks/<operation>/` when it owns an independent flow. Keep coordinating hooks such as `useTaskActions` together when their state and lifecycle are shared; do not create a hook for every HTTP call.
+- Put data contracts in `types/*.type.ts`, request inputs in `types/input/*.input.ts`, and enums in `types/enum/*.enum.ts`. Keep task data, request inputs, filters, and form/query state distinct. Use plain TypeScript types for browser data; do not copy Nest DTO decorators or introduce entity classes for identical JSON shapes.
+- Put conversions in `mappers/`: task data to drafts, drafts to request inputs, and filters to query strings. Put runtime response checks and form validation in `validators/`. Keep presentation helpers in `utils/`; runtime labels do not belong in `types/`.
+- Feature contracts and pure helpers must not depend on components or hooks. Components may import state contracts from `types/` without importing the hooks that implement them.
+- Keep shared HTTP errors in `shared/errors/` and transport/readable HTTP feedback in `shared/http/`. Feature response validators stay with their feature.
+- The API remains authoritative for ownership, lifecycle rules, persistence, and email delivery. Frontend checks provide feedback; preserve partial-update semantics and the distinction between an absent time and explicit midnight.
+- Preserve React functions, hooks, props, composition, and effect cleanup. Add a service, repository, context, or dependency-injection layer only for a concrete frontend responsibility; resemblance to Nest alone is not a reason.
+- Keep behavior tests beside their subject when moving or splitting files. Update all imports and mocks, remove obsolete files, and check for stale names after a structural refactor.
+
 ## Frontend and Skills
 
 - LiLi is a private, self-hosted project for its creator and family. Favor simple, accessible interfaces and maintainable code based on concrete household needs.

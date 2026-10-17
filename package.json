@@ -1,6 +1,6 @@
 {
   "name": "lili-web",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Web interface for the private LiLi home assistant",
   "private": true,
   "license": "UNLICENSED",

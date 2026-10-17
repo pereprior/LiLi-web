@@ -1,30 +1,30 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { HttpError } from '#src/shared/http/http-client.js';
+import { HttpError } from '#src/shared/errors/http.error.js';
 import { i18n } from '#src/shared/i18n/i18n.js';
 import { tasksApi } from '#src/tasks/api/tasks.api.js';
 import { useTaskActions } from '#src/tasks/hooks/actions/use-task-actions.js';
-import type { Task } from '#src/tasks/types/task.types.js';
-import { TaskPriority } from '#src/tasks/types/task-priority.enum.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
+import { TaskPriority } from '#src/tasks/types/enum/task-priority.enum.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
+import type { Task } from '#src/tasks/types/task.type.js';
 
 vi.mock('#src/tasks/api/tasks.api.js', () => ({
   tasksApi: {
     create: vi.fn(),
-    update: vi.fn(),
-    list: vi.fn(),
+    updateDetails: vi.fn(),
+    findAll: vi.fn(),
     updateStatus: vi.fn(),
-    remove: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
 describe('task actions', () => {
   beforeEach(() => {
     vi.mocked(tasksApi.create).mockReset();
-    vi.mocked(tasksApi.update).mockReset();
-    vi.mocked(tasksApi.list).mockReset();
-    vi.mocked(tasksApi.remove).mockReset();
+    vi.mocked(tasksApi.updateDetails).mockReset();
+    vi.mocked(tasksApi.findAll).mockReset();
+    vi.mocked(tasksApi.delete).mockReset();
     vi.mocked(tasksApi.updateStatus).mockReset();
   });
 
@@ -72,7 +72,7 @@ describe('task actions', () => {
     vi.mocked(tasksApi.create).mockRejectedValue(
       new HttpError(0, ['Network failed']),
     );
-    vi.mocked(tasksApi.list).mockResolvedValue([]);
+    vi.mocked(tasksApi.findAll).mockResolvedValue([]);
     const { result } = renderHook(() =>
       useTaskActions({
         filtered: false,
@@ -93,7 +93,7 @@ describe('task actions', () => {
     });
 
     await act(() => result.current.reviewCreation());
-    expect(tasksApi.list).toHaveBeenCalledWith();
+    expect(tasksApi.findAll).toHaveBeenCalledWith();
     expect(result.current.uncertainCreation).toEqual({
       tasks: [],
       checking: false,
@@ -176,7 +176,7 @@ describe('task actions', () => {
       end: null,
       reminder: null,
     };
-    vi.mocked(tasksApi.update).mockRejectedValue(
+    vi.mocked(tasksApi.updateDetails).mockRejectedValue(
       new HttpError(409, ['La tarea ha cambiado']),
     );
     const refresh = vi.fn();
@@ -251,7 +251,7 @@ describe('task actions', () => {
       end: null,
       reminder: null,
     };
-    vi.mocked(tasksApi.remove).mockResolvedValue(undefined);
+    vi.mocked(tasksApi.delete).mockResolvedValue(undefined);
     const selectTask = vi.fn();
     const refresh = vi.fn();
     const { result } = renderHook(() =>
@@ -266,11 +266,11 @@ describe('task actions', () => {
     act(() => result.current.requestDelete(task));
 
     expect(result.current.confirmation).toEqual({ kind: 'delete', task });
-    expect(tasksApi.remove).not.toHaveBeenCalled();
+    expect(tasksApi.delete).not.toHaveBeenCalled();
 
     await act(() => result.current.confirmAction());
 
-    expect(tasksApi.remove).toHaveBeenCalledWith('task');
+    expect(tasksApi.delete).toHaveBeenCalledWith('task');
     expect(result.current.confirmation).toBeNull();
     expect(selectTask).toHaveBeenCalledWith(null);
     expect(refresh).toHaveBeenCalledOnce();

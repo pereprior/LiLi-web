@@ -33,7 +33,7 @@ Search and filters are submitted explicitly. **Overdue**, **Today** and **Next 7
 
 Reminder dates are saved as part of a task. A reminder without a time uses 06:00 in Madrid; the frontend keeps its absent time. Delivery uses the owner's Google email and depends on the server configuration. The interface confirms saved dates, without reporting sent or failed emails. Completing, cancelling, deleting or clearing a reminder cancels pending sends; it cannot withdraw an email already being sent.
 
-A `401` removes private tasks, detail and drafts and returns to sign-in. Connection failures offer a retry. A rejected write with `403` keeps the session and explains the origin check. A conflict refreshes the context while retaining the editing draft for review.
+A `401` removes private tasks, detail and drafts and returns to sign-in. Connection failures offer a retry. A rejected write with `403` keeps the session and explains the origin check. A conflict refreshes the context while retaining the editing draft for review. Saving stays disabled while the context reloads or is unavailable; if the task has become completed or cancelled, the editor becomes read-only.
 
 ## Languages
 
@@ -54,13 +54,28 @@ Appearance offers light, dark and system modes. Material UI stores this preferen
 - `src/main.tsx` provides the browser router; `src/app/` composes the session, routes, header, appearance and tasks page. `theme.ts` owns shared visual choices.
 - `src/auth/` owns the user contract, HTTP adapter, session hook and access screen.
 - `src/tasks/components/page/tasks-page.tsx` composes the list, view controls and three task dialogs.
-- `src/tasks/` owns its contracts and enums, API adapter, read and mutation hooks, list, filters, detail, forms, and presentation helpers. Tests live next to their behavior.
-- `src/shared/http/` contains the small HTTP client and readable error handling used by both features.
+- `src/tasks/` owns task contracts, HTTP operations, hooks, components, mappers, validators and presentation helpers. Tests live next to their behavior.
+- `src/shared/http/` contains the HTTP client and readable feedback used by both features; `src/shared/errors/` owns the shared `HttpError`.
 - `src/shared/i18n/` configures English, Spanish and Valencian; `labels/` groups translation catalogs by language and section.
 - `test/setup.ts` cleans up component tests; `test/tasks/` contains task browser flows.
 - `public/lili-symbol.png` preserves the original logo, shared by the header and favicon.
 
-Within each feature, components, hooks and utilities are grouped by responsibility. In tasks, `components/` contains `page/`, `list/`, `detail/`, `form/`, `filters/` and `confirmation/`; `hooks/` contains `actions/`, `data/` and `selection/`; and `utils/` contains `dates/`, `form/` and `status/`. Each unit test stays beside its implementation. Authentication groups its access screen under `components/login/` and its session hook under `hooks/session/`; application components use `appearance/` and `branding/`.
+Both repositories use feature ownership, kebab-case filenames, explicit contracts, focused responsibilities and colocated tests. The web adapts that structure to React:
+
+| Responsibility          | LiLi API                                       | LiLi Web                                                                                   |
+| ----------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Entry and composition   | Controllers and Nest modules                   | Pages, components and `app/` routing                                                       |
+| Operation coordination  | Operation services with `execute`              | Hooks that coordinate requests and interface state                                         |
+| External access         | Repository adapters and infrastructure clients | Feature HTTP adapters under `api/`                                                         |
+| Contracts               | DTOs, entities and operation types             | Plain types under `types/`, request inputs under `types/input/`, enums under `types/enum/` |
+| Conversion and checking | Mappers and validators                         | Mappers for drafts/payloads/query strings; validators for responses and forms              |
+| Shared concerns         | `shared/` utilities and contracts              | `shared/` HTTP, errors and internationalization                                            |
+
+The task HTTP adapter uses the API controller's operation names: `findAll`, `findByUuid`, `create`, `updateDetails`, `updateStatus` and `delete`. It handles URLs, methods and allowed request fields. Response validators check received JSON; mappers convert form drafts and filters. React hooks own loading, cancellation, session expiration and mutation feedback. Backend authorization, persistence and reminder delivery remain in LiLi-api.
+
+In tasks, `components/` groups `page/`, `list/`, `detail/`, `form/`, `filters/` and `confirmation/`. Independent reads live in `hooks/find-all-tasks/` and `hooks/find-task-context/`; `hooks/actions/` coordinates mutation dialogs and feedback, and `hooks/selection/` owns URL selection. UI state contracts live in `types/`, so components do not import their types from hook implementations. `mappers/`, `validators/` and `utils/` separate conversion, validation and presentation. Authentication keeps its access screen under `components/login/`, session state under `hooks/session/` and response checks under `validators/`.
+
+The browser uses functions, hooks and plain data types. There is no extra repository layer or Nest-style injection container; the existing HTTP boundary is sufficient. The [agent guidelines](AGENTS.md#architecture-shared-with-lili-api) record these conventions for future features.
 
 The project uses strict TypeScript, ESM, React, React Router, Vite, Material UI with Emotion, ESLint, Prettier and Vitest. Browser code uses bundler resolution. Runtime imports use `#src/` with `.js` extensions. React Router uses its [declarative mode](https://reactrouter.com/start/declarative/installation) with `BrowserRouter`, `Routes` and `Route`; the existing hooks still own session checks and task requests. Session and task data stay in memory; there is no global state, form or query library.
 
@@ -71,6 +86,8 @@ pnpm run ci
 ```
 
 This runs lint, formatting, type checks, build and Vitest with V8 coverage. Tests cover language fallback, pluralization, localized dates and messages, session-aware redirects, task selection and browser history, the HTTP contract and `204`, query serialization, session lifecycle, Madrid date serialization, partial updates, validation, terminal and family status controls, and discarded late responses.
+
+The GitHub Actions workflow runs separate jobs for type checking, build, test coverage, lint/formatting and browser tests on pushes and pull requests to `main`, following the sibling API's CI structure. Each job installs the locked dependencies and runs independently. The browser job installs Chromium and its system dependencies before Playwright runs. Live API checks remain opt-in.
 
 Browser checks use Playwright Chromium in desktop and mobile sizes with light and dark themes:
 

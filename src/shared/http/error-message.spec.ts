@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { HttpError } from '#src/shared/errors/http.error.js';
 import { getErrorMessage } from '#src/shared/http/error-message.js';
-import { HttpError } from '#src/shared/http/http-client.js';
 
 describe('getErrorMessage', () => {
   it('keeps the readable message from an HTTP error', () => {

@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import type {
   TaskContext,
   TaskQuery,
-} from '#src/tasks/hooks/data/use-task-data.js';
+} from '#src/tasks/types/task-query.type.js';
 
 type TaskDetailDialogProps = {
   open: boolean;

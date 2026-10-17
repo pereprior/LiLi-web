@@ -10,9 +10,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '#src/shared/i18n/i18n.js';
 import { TaskForm } from '#src/tasks/components/form/task-form.js';
-import type { Task } from '#src/tasks/types/task.types.js';
-import { TaskPriority } from '#src/tasks/types/task-priority.enum.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
+import { TaskPriority } from '#src/tasks/types/enum/task-priority.enum.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
+import type { Task } from '#src/tasks/types/task.type.js';
 
 afterEach(cleanup);
 

@@ -1,4 +1,4 @@
-import { HttpError } from '#src/shared/http/http-client.js';
+import { HttpError } from '#src/shared/errors/http.error.js';
 import { i18n } from '#src/shared/i18n/i18n.js';
 
 export function getErrorMessage(error: unknown): string {

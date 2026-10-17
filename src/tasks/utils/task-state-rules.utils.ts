@@ -1,7 +1,7 @@
 import { i18n } from '#src/shared/i18n/i18n.js';
-import type { Task } from '#src/tasks/types/task.types.js';
-import { taskStatusLabels } from '#src/tasks/types/task-labels.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
+import type { Task } from '#src/tasks/types/task.type.js';
+import { taskStatusLabels } from '#src/tasks/utils/task-labels.utils.js';
 
 const allowedSubtaskStatuses: Record<TaskStatus, readonly TaskStatus[]> = {
   [TaskStatus.PENDING]: [TaskStatus.PENDING],

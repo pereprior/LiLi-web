@@ -9,27 +9,27 @@ import type { FormEvent, ReactElement } from 'react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  CreateTaskInput,
-  Task,
-  UpdateTaskInput,
-} from '#src/tasks/types/task.types.js';
-import { taskPriorityLabels } from '#src/tasks/types/task-labels.js';
-import { TaskPriority } from '#src/tasks/types/task-priority.enum.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
 import {
   buildCreateTaskInput,
-  buildUpdateTaskInput,
+  buildUpdateTaskDetailsInput,
   createTaskDraft,
+} from '#src/tasks/mappers/task-form.mapper.js';
+import { TaskPriority } from '#src/tasks/types/enum/task-priority.enum.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
+import type { CreateTaskInput } from '#src/tasks/types/input/create-task.input.js';
+import type { UpdateTaskDetailsInput } from '#src/tasks/types/input/update-task-details.input.js';
+import type { Task } from '#src/tasks/types/task.type.js';
+import {
   type TaskDateDraft,
   type TaskDraft,
-  validateTaskDraft,
-} from '#src/tasks/utils/form/task-form.utils.js';
+} from '#src/tasks/types/task-form.type.js';
+import { taskPriorityLabels } from '#src/tasks/utils/task-labels.utils.js';
+import { validateTaskDraft } from '#src/tasks/validators/task-form.validator.js';
 
 export interface TaskFormProps {
   task?: Task | undefined;
   parentUuid?: string | undefined;
-  onSubmit: (input: CreateTaskInput | UpdateTaskInput) => Promise<void>;
+  onSubmit: (input: CreateTaskInput | UpdateTaskDetailsInput) => Promise<void>;
   onCancel: () => void;
   submitting: boolean;
   submitBlocked?: boolean;
@@ -136,7 +136,9 @@ export function TaskForm({
   const validation = validateTaskDraft(draft, original);
   const errors = showValidation ? validation : {};
   const update =
-    original === undefined ? null : buildUpdateTaskInput(draft, original);
+    original === undefined
+      ? null
+      : buildUpdateTaskDetailsInput(draft, original);
   const unchanged = update !== null && Object.keys(update).length === 0;
   const disabled = submitting || terminal;
 

@@ -11,9 +11,9 @@ import Typography from '@mui/material/Typography';
 import { type ReactElement, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { TaskFilters } from '#src/tasks/types/task.types.js';
-import { taskStatusLabels } from '#src/tasks/types/task-labels.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
+import type { TaskFilters } from '#src/tasks/types/find-task-options.type.js';
+import { taskStatusLabels } from '#src/tasks/utils/task-labels.utils.js';
 
 type TaskFiltersProps = {
   filters: TaskFilters;
@@ -108,6 +108,10 @@ export function TaskFilters({
                   const manual = { ...draft };
                   delete manual.view;
                   delete manual.dateField;
+                  if (event.target.value === '') {
+                    delete manual.dateFrom;
+                    delete manual.dateTo;
+                  }
                   setDraft(
                     event.target.value === ''
                       ? manual

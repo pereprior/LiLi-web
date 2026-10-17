@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { i18n } from '#src/shared/i18n/i18n.js';
-import { formatTaskDate } from '#src/tasks/utils/dates/task-display.utils.js';
+import { formatTaskDate } from '#src/tasks/utils/task-display.utils.js';
 
 describe('formatTaskDate', () => {
   it.each([

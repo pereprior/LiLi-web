@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '#src/app/app.js';
 import { authApi } from '#src/auth/api/auth.api.js';
 import type { User } from '#src/auth/types/user.type.js';
-import { HttpError } from '#src/shared/http/http-client.js';
+import { HttpError } from '#src/shared/errors/http.error.js';
 
 vi.mock('#src/auth/api/auth.api.js', () => ({
   authApi: { me: vi.fn(), logout: vi.fn() },

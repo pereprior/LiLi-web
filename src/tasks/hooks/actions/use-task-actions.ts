@@ -1,20 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { HttpError } from '#src/shared/errors/http.error.js';
 import { getErrorMessage } from '#src/shared/http/error-message.js';
-import { HttpError } from '#src/shared/http/http-client.js';
 import { tasksApi } from '#src/tasks/api/tasks.api.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
+import type { CreateTaskInput } from '#src/tasks/types/input/create-task.input.js';
+import type { UpdateTaskDetailsInput } from '#src/tasks/types/input/update-task-details.input.js';
+import type { Task } from '#src/tasks/types/task.type.js';
 import type {
-  CreateTaskInput,
-  Task,
-  UpdateTaskInput,
-} from '#src/tasks/types/task.types.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
+  TaskConfirmation,
+  TaskEditor,
+  UncertainCreation,
+} from '#src/tasks/types/task-actions.type.js';
 
-export type TaskEditor =
-  { kind: 'create'; parentUuid?: string } | { kind: 'edit'; task: Task };
-export type TaskConfirmation = { kind: 'delete' | 'cancel'; task: Task };
-export type UncertainCreation = { tasks: Task[] | null; checking: boolean };
 type TaskActions = {
   editor: TaskEditor | null;
   confirmation: TaskConfirmation | null;
@@ -31,7 +30,7 @@ type TaskActions = {
   closeConfirmation: () => void;
   confirmAction: () => Promise<void>;
   selectExistingTask: (uuid: string) => void;
-  save: (input: CreateTaskInput | UpdateTaskInput) => Promise<void>;
+  save: (input: CreateTaskInput | UpdateTaskDetailsInput) => Promise<void>;
   reviewCreation: () => Promise<void>;
 };
 
@@ -145,7 +144,9 @@ export function useTaskActions({
       refresh();
   }
 
-  async function save(input: CreateTaskInput | UpdateTaskInput): Promise<void> {
+  async function save(
+    input: CreateTaskInput | UpdateTaskDetailsInput,
+  ): Promise<void> {
     if (!editor || writing.current || uncertainCreation?.tasks === null) return;
     writing.current = true;
     setBusy(true);
@@ -154,7 +155,7 @@ export function useTaskActions({
     try {
       const saved =
         editor.kind === 'edit'
-          ? await tasksApi.update(editor.task.uuid, input)
+          ? await tasksApi.updateDetails(editor.task.uuid, input)
           : await tasksApi.create(input as CreateTaskInput);
       if (!active.current) return;
       setEditor(null);
@@ -188,7 +189,7 @@ export function useTaskActions({
   async function reviewCreation(): Promise<void> {
     setUncertainCreation({ tasks: null, checking: true });
     try {
-      const tasks = await tasksApi.list();
+      const tasks = await tasksApi.findAll();
       if (!active.current) return;
       setUncertainCreation({ tasks, checking: false });
       refresh();
@@ -226,7 +227,7 @@ export function useTaskActions({
     setMutationError(null);
     setNotice(null);
     try {
-      await tasksApi.remove(task.uuid);
+      await tasksApi.delete(task.uuid);
       if (!active.current) return;
       setConfirmation(null);
       setEditor(null);

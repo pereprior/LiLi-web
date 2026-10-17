@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { HttpError } from '#src/shared/http/http-client.js';
+import { HttpError } from '#src/shared/errors/http.error.js';
 import { tasksApi } from '#src/tasks/api/tasks.api.js';
-import type { Task } from '#src/tasks/types/task.types.js';
-import { TaskPriority } from '#src/tasks/types/task-priority.enum.js';
-import { TaskStatus } from '#src/tasks/types/task-status.enum.js';
+import { TaskPriority } from '#src/tasks/types/enum/task-priority.enum.js';
+import { TaskStatus } from '#src/tasks/types/enum/task-status.enum.js';
+import type { Task } from '#src/tasks/types/task.type.js';
 
 describe('tasksApi', () => {
   const fetchMock = vi.fn<typeof fetch>();
@@ -23,7 +23,7 @@ describe('tasksApi', () => {
       fetchMock.mockResolvedValue(Response.json([]));
 
       await expect(
-        tasksApi.list({ search: '  ', status: [], dateFrom: '' }),
+        tasksApi.findAll({ search: '  ', status: [], dateFrom: '' }),
       ).resolves.toEqual([]);
 
       expect(fetchMock).toHaveBeenCalledWith('/tasks', expect.any(Object));
@@ -32,7 +32,7 @@ describe('tasksApi', () => {
     it('repeats selected statuses and preserves literal search characters', async () => {
       fetchMock.mockResolvedValue(Response.json([]));
 
-      await tasksApi.list({
+      await tasksApi.findAll({
         status: [TaskStatus.PENDING, TaskStatus.BLOCKED],
         search: '  café %_\\  ',
         dateField: 'end',
@@ -61,7 +61,7 @@ describe('tasksApi', () => {
     it('removes incompatible status and date filters from a quick view', async () => {
       fetchMock.mockResolvedValue(Response.json([]));
 
-      await tasksApi.list({
+      await tasksApi.findAll({
         view: 'upcoming',
         status: [TaskStatus.COMPLETED],
         dateField: 'end',
@@ -81,7 +81,7 @@ describe('tasksApi', () => {
       const controller = new AbortController();
       fetchMock.mockResolvedValue(Response.json([]));
 
-      await tasksApi.list({}, controller.signal);
+      await tasksApi.findAll({}, controller.signal);
 
       expect(fetchMock).toHaveBeenCalledWith(
         '/tasks',
@@ -109,7 +109,7 @@ describe('tasksApi', () => {
       };
       fetchMock.mockResolvedValue(Response.json(task));
 
-      await expect(tasksApi.get(task.uuid)).resolves.toEqual(task);
+      await expect(tasksApi.findByUuid(task.uuid)).resolves.toEqual(task);
     });
 
     it.each([
@@ -133,7 +133,7 @@ describe('tasksApi', () => {
     ])('rejects an unexpected list shape %j', async (body) => {
       fetchMock.mockResolvedValue(Response.json(body));
 
-      await expect(tasksApi.list()).rejects.toEqual(
+      await expect(tasksApi.findAll()).rejects.toEqual(
         new HttpError(200, [
           'La respuesta del servidor no tiene el formato esperado.',
         ]),
@@ -197,7 +197,7 @@ describe('tasksApi', () => {
         }),
       );
 
-      await tasksApi.update('task', {
+      await tasksApi.updateDetails('task', {
         priority: TaskPriority.LOW,
         reminder: null,
       });
@@ -241,7 +241,7 @@ describe('tasksApi', () => {
     it('confirms deletion only after the success response', async () => {
       fetchMock.mockResolvedValue(Response.json({ success: true }));
 
-      await expect(tasksApi.remove('task')).resolves.toBeUndefined();
+      await expect(tasksApi.delete('task')).resolves.toBeUndefined();
 
       expect(fetchMock).toHaveBeenCalledWith(
         '/tasks/task',
@@ -252,7 +252,7 @@ describe('tasksApi', () => {
     it('rejects an unsuccessful deletion response', async () => {
       fetchMock.mockResolvedValue(Response.json({ success: false }));
 
-      await expect(tasksApi.remove('task')).rejects.toEqual(
+      await expect(tasksApi.delete('task')).rejects.toEqual(
         new HttpError(200, [
           'La respuesta del servidor no tiene el formato esperado.',
         ]),

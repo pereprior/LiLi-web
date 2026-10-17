@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { authApi } from '#src/auth/api/auth.api.js';
-import { HttpError } from '#src/shared/http/http-client.js';
+import { HttpError } from '#src/shared/errors/http.error.js';
 
 describe('authApi', () => {
   afterEach(() => {

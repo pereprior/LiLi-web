@@ -15,12 +15,10 @@ import { TaskViews } from '#src/tasks/components/filters/task-views.js';
 import { TaskEditorDialog } from '#src/tasks/components/form/task-editor-dialog.js';
 import { TaskList } from '#src/tasks/components/list/task-list.js';
 import { useTaskActions } from '#src/tasks/hooks/actions/use-task-actions.js';
-import {
-  useTaskContext,
-  useTaskList,
-} from '#src/tasks/hooks/data/use-task-data.js';
+import { useFindAllTasks } from '#src/tasks/hooks/find-all-tasks/use-find-all-tasks.js';
+import { useFindTaskContext } from '#src/tasks/hooks/find-task-context/use-find-task-context.js';
 import { useTaskSelection } from '#src/tasks/hooks/selection/use-task-selection.js';
-import type { TaskFilters } from '#src/tasks/types/task.types.js';
+import type { TaskFilters } from '#src/tasks/types/find-task-options.type.js';
 
 type TasksPageProps = { email: string; onUnauthorized: () => void };
 
@@ -32,8 +30,7 @@ export function TasksPage({
   const [filters, setFilters] = useState<TaskFilters>({});
   const [reloadCount, setReloadCount] = useState(0);
   const { selectedUuid, selectTask } = useTaskSelection();
-  const list = useTaskList(filters, reloadCount, onUnauthorized);
-  const detail = useTaskContext(selectedUuid, reloadCount, onUnauthorized);
+  const list = useFindAllTasks(filters, reloadCount, onUnauthorized);
   const filtered = !!(
     filters.search?.trim() ||
     filters.status?.length ||
@@ -53,6 +50,11 @@ export function TasksPage({
     refresh,
     onUnauthorized,
   });
+  const detail = useFindTaskContext(
+    actions.editor?.kind === 'edit' ? actions.editor.task.uuid : selectedUuid,
+    reloadCount,
+    onUnauthorized,
+  );
 
   function closeDetail(): void {
     if (actions.busy) return;
@@ -176,10 +178,12 @@ export function TasksPage({
       </TaskDetailDialog>
       <TaskEditorDialog
         editor={actions.editor}
+        context={detail}
         busy={actions.busy}
         error={actions.mutationError}
         uncertainCreation={actions.uncertainCreation}
         onClose={actions.closeEditor}
+        onReload={refresh}
         onSave={actions.save}
         onReviewCreation={actions.reviewCreation}
         onSelectExisting={actions.selectExistingTask}
