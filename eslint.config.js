@@ -13,7 +13,11 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['vite.config.ts'],
+          allowDefaultProject: [
+            'vite.config.ts',
+            'playwright.config.ts',
+            'test/*/*.ts',
+          ],
           defaultProject: 'tsconfig.node.json',
         },
         tsconfigRootDir: import.meta.dirname,

@@ -30,13 +30,13 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       clearMocks: true,
       include: ['src/**/*.spec.ts', 'src/**/*.spec.tsx'],
-      passWithNoTests: true,
+      setupFiles: ['./test/setup.ts'],
       coverage: {
         provider: 'v8',
         include: ['src/**/*.ts', 'src/**/*.tsx'],
         exclude: ['src/main.tsx', 'src/**/*.spec.ts', 'src/**/*.spec.tsx'],
-        reporter: ['text', 'html'],
-        reportsDirectory: './coverage',
+        reporter: ['text'],
+        reportsDirectory: './node_modules/.cache/vitest-coverage',
       },
     },
   };
