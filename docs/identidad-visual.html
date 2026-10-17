@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>LiLi · Base de identidad visual</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #f7f6fa;
+        color: #262230;
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+      }
+      main {
+        max-width: 1120px;
+        margin: auto;
+        padding: 48px 24px;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(2rem, 5vw, 3.4rem);
+        font-weight: 600;
+        letter-spacing: -0.04em;
+        line-height: 1.15;
+        margin: 12px 0 16px;
+      }
+      h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+      h3 {
+        font-size: 1rem;
+        margin-bottom: 8px;
+      }
+      .intro {
+        max-width: 660px;
+        color: #655f70;
+      }
+      .eyebrow {
+        color: #6d5aa6;
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .badge {
+        display: inline-block;
+        background: #eee9f7;
+        color: #6d5aa6;
+        padding: 6px 12px;
+        border-radius: 20px;
+        margin-top: 20px;
+        font-size: 0.85rem;
+      }
+      .themes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+        margin-top: 36px;
+      }
+      .theme {
+        padding: 24px;
+        border-radius: 20px;
+      }
+      .light {
+        --primary: #6d5aa6;
+        --soft: #eee9f7;
+        --surface: #ffffff;
+        --secondary: #655f70;
+        --on-primary: #ffffff;
+        background: #f7f6fa;
+        color: #262230;
+        border: 1px solid #d8d3e1;
+      }
+      .dark {
+        --primary: #b9a5e8;
+        --soft: #332a46;
+        --surface: #221e2a;
+        --secondary: #b9b2c5;
+        --on-primary: #262230;
+        background: #17141d;
+        color: #f2eef8;
+        border: 1px solid #17141d;
+      }
+      .theme-heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .theme-heading span,
+      small {
+        color: var(--secondary, #655f70);
+        font-size: 0.8rem;
+      }
+      .brand {
+        background: var(--surface);
+        padding: 24px;
+        border-radius: 12px;
+        margin: 20px 0 24px;
+      }
+      .wordmark {
+        color: var(--primary);
+        font-size: 3.5rem;
+        font-weight: 500;
+        letter-spacing: -0.06em;
+        line-height: 1.2;
+      }
+      .brand > p:not(.wordmark) {
+        margin: 8px 0;
+      }
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+      .color {
+        height: 56px;
+        border-radius: 8px;
+        outline: 1px solid #88888833;
+        outline-offset: -1px;
+      }
+      .swatch p {
+        margin-top: 8px;
+        font-size: 0.9rem;
+      }
+      code {
+        font-size: 0.8rem;
+        color: var(--secondary, #655f70);
+      }
+      .pair {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px;
+        margin-top: 28px;
+      }
+      .pair p {
+        font-size: 0.8rem;
+      }
+      .action-sample {
+        display: inline-block;
+        background: var(--primary);
+        color: var(--on-primary);
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .selection {
+        background: var(--soft);
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        margin-top: 20px;
+      }
+      .section {
+        margin-top: 36px;
+      }
+      .section > p {
+        margin-top: 8px;
+        color: #655f70;
+        max-width: 760px;
+      }
+      .states {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+      }
+      .state span {
+        display: block;
+        color: #ffffff;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .state code {
+        display: block;
+        margin-top: 8px;
+      }
+      .state p {
+        margin-top: 6px;
+        font-size: 0.85rem;
+      }
+      .notes {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px;
+        margin-top: 36px;
+      }
+      .notes p {
+        color: #655f70;
+        font-size: 0.9rem;
+      }
+      footer {
+        border-top: 1px solid #d8d3e1;
+        margin-top: 36px;
+        padding-top: 20px;
+        font-size: 0.85rem;
+        color: #655f70;
+      }
+      a {
+        color: #6d5aa6;
+      }
+      a:focus-visible {
+        outline: 2px solid #6d5aa6;
+        outline-offset: 4px;
+      }
+      @media (max-width: 760px) {
+        .themes,
+        .notes {
+          grid-template-columns: 1fr;
+        }
+        .states {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        main {
+          padding: 32px 16px;
+        }
+      }
+      @media (max-width: 380px) {
+        .theme {
+          padding: 16px;
+        }
+        .theme-heading {
+          align-items: start;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .states {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media print {
+        main {
+          padding: 0;
+        }
+        body {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+        .theme,
+        .state,
+        .notes {
+          break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">LiLi · Identidad visual</p>
+        <h1>Serena. Cercana. Discreta.</h1>
+        <p class="intro">
+          Morado como firma visual, neutros suaves como base. Una referencia
+          para decidir la identidad de nuestro asistente antes de diseñar sus
+          pantallas.
+        </p>
+        <span class="badge">Propuesta inicial · para revisar</span>
+      </header>
+      <div class="themes">
+        <section class="theme light" aria-labelledby="light-title">
+          <div class="theme-heading">
+            <h2 id="light-title">Claro</h2>
+            <span>Paleta inicial</span>
+          </div>
+          <div class="brand">
+            <p class="wordmark">LiLi</p>
+            <p>Tu asistente para casa.</p>
+            <small>Muestra tipográfica · archivo del logo pendiente</small>
+          </div>
+          <div class="swatches">
+            <div class="swatch">
+              <div class="color" style="background: #6d5aa6"></div>
+              <p>Morado principal<br /><code>#6D5AA6</code></p>
+            </div>
+            <div class="swatch">
+              <div class="color" style="background: #eee9f7"></div>
+              <p>Morado suave<br /><code>#EEE9F7</code></p>
+            </div>
+            <div class="swatch">
+              <div class="color" style="background: #f7f6fa"></div>
+              <p>Fondo<br /><code>#F7F6FA</code></p>
+            </div>
+            <div class="swatch">
+              <div class="color" style="background: #ffffff"></div>
+              <p>Superficie<br /><code>#FFFFFF</code></p>
+            </div>
+            <div class="swatch">
+              <div class="color" style="background: #262230"></div>
+              <p>Texto principal<br /><code>#262230</code></p>
+            </div>
+            <div class="swatch">
+              <div class="color" style="background: #655f70"></div>
+              <p>Texto secundario<br /><code>#655F70</code></p>
+            </div>
+          </div>
+          <div class="pair">
+            <span class="action-sample">Añadir tarea</span>
+            <p>
+              Muestra de color de acción<br /><small
+                >Texto blanco · 5,73:1</small
+              >
+            </p>
+          </div>
+          <p class="selection">
+            ✓ Selección con indicador y fondo morado suave
+          </p>
+        </section>
+        <section class="theme dark" aria-labelledby="dark-title">
+          <div class="theme-heading">
+            <h2 id="dark-title">Oscuro</h2>
+            <span>Paleta inicial</span>
+          </div>
+          <div class="brand">
+            <p class="wordmark">LiLi</p>
+            <p>Tu asistente para casa.</p>
+            <small>Muestra tipográfica · archivo del logo pendiente</small>
+          </div>
+          <div class="swatches">
+            <div class="swatch">
+              <div class="color" style="background: #b9a5e8"></div>
+              <p>Morado principal<br /><code>#B9A5E8</code></p>
+            </div>
+            <div class="swatch">
+              <div class="color" style="background: #332a46"></div>
+              <p>Morado suave<br /><code>#332A46</code></p>
+            </div>
+            <div class="swatch">
+              <div class="color" style="background: #17141d"></div>
+              <p>Fondo<br /><code>#17141D</code></p>
+            </div>
+            <div class="swatch">
+              <div class="color" style="background: #221e2a"></div>
+              <p>Superficie<br /><code>#221E2A</code></p>
+            </div>
+            <div class="swatch">
+              <div class="color" style="background: #f2eef8"></div>
+              <p>Texto principal<br /><code>#F2EEF8</code></p>
+            </div>
+            <div class="swatch">
+              <div class="color" style="background: #b9b2c5"></div>
+              <p>Texto secundario<br /><code>#B9B2C5</code></p>
+            </div>
+          </div>
+          <div class="pair">
+            <span class="action-sample">Añadir tarea</span>
+            <p>
+              Muestra de color de acción<br /><small
+                >Texto oscuro · 7,10:1</small
+              >
+            </p>
+          </div>
+          <p class="selection">
+            ✓ Selección con indicador y fondo morado suave
+          </p>
+        </section>
+      </div>
+      <section class="section" aria-labelledby="states-title">
+        <h2 id="states-title">Colores de estado · tema claro</h2>
+        <p>
+          Candidatos de la propuesta original. Las variantes oscuras y los
+          fondos suaves siguen pendientes. Los mensajes son ejemplos de tono.
+        </p>
+        <div class="states">
+          <div class="state">
+            <span style="background: #2e7d65">Éxito</span><code>#2E7D65</code>
+            <p>Recordatorio guardado</p>
+          </div>
+          <div class="state">
+            <span style="background: #946200">Advertencia</span
+            ><code>#946200</code>
+            <p>Hay cambios sin guardar</p>
+          </div>
+          <div class="state">
+            <span style="background: #b54755">Error</span><code>#B54755</code>
+            <p>No se ha podido conectar</p>
+          </div>
+          <div class="state">
+            <span style="background: #356d9a">Información</span
+            ><code>#356D9A</code>
+            <p>Conectando con LiLi</p>
+          </div>
+        </div>
+      </section>
+      <div class="notes">
+        <section>
+          <h3>Logo</h3>
+          <p>
+            Símbolo morado elegido: contorno exterior de ocho puntas y forma
+            circular interior con cuatro puntas. Falta incorporar el archivo
+            original. El nombre mostrado arriba es una muestra tipográfica.
+          </p>
+        </section>
+        <section>
+          <h3>Tipografía y formas</h3>
+          <p>
+            Inter como candidata. Esquinas moderadamente redondeadas, sombras
+            discretas y espacio suficiente. Esta lámina utiliza la fuente del
+            sistema; los tamaños y radios ilustran la dirección.
+          </p>
+        </section>
+        <section>
+          <h3>Voz</h3>
+          <p>
+            Natural y directa: «Añadir tarea», «Recordatorio guardado», «No se
+            ha podido conectar». Mensajes útiles que describan el comportamiento
+            real.
+          </p>
+        </section>
+      </div>
+      <footer>
+        Lámina de identidad, con muestras estáticas de color. Consulta la
+        <a href="./identidad-visual.md">guía de identidad</a> para los usos,
+        contrastes y decisiones pendientes.
+      </footer>
+    </main>
+  </body>
+</html>
