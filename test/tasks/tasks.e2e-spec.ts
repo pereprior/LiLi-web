@@ -45,7 +45,8 @@ test('creates, edits and deletes a task through the interface', async ({
         });
     },
   );
-  await page.goto('/');
+  await page.goto('/login');
+  await expect(page).toHaveURL('/');
   await page
     .getByRole('button', { name: 'Añadir tarea', exact: true })
     .first()
@@ -186,12 +187,21 @@ test('opens a filtered subtask with the full family and removes private data on4
   await expect(
     page.getByRole('heading', { name: 'Reservar hotel', exact: true }),
   ).toBeVisible();
+  await page.goForward();
+  await expect(
+    page.getByRole('heading', { name: 'Preparar viaje', exact: true }),
+  ).toBeVisible();
+  await page.goBack();
+  await expect(
+    page.getByRole('heading', { name: 'Reservar hotel', exact: true }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Volver a la lista' }).click();
   expired = true;
   await page.getByRole('button', { name: 'Recargar', exact: true }).click();
   await expect(
     page.getByRole('link', { name: 'Entrar con Google' }),
   ).toBeVisible();
+  await expect(page).toHaveURL('/login');
   await expect(
     page.getByText('familia@example.com', { exact: true }),
   ).not.toBeVisible();
@@ -318,6 +328,13 @@ test('creates a subtask and refreshes all children after cancelling their princi
     },
   );
   await page.goto(`/?task=${parentUuid}`);
+  await expect(
+    page.getByRole('heading', { name: 'Ordenar la casa', exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: 'Ordenar la casa', exact: true }),
+  ).toBeVisible();
   await page
     .getByRole('button', { name: 'Añadir subtarea', exact: true })
     .click();
@@ -339,6 +356,9 @@ test('creates a subtask and refreshes all children after cancelling their princi
   await page
     .getByRole('button', { name: 'Ver principal: Ordenar la casa' })
     .click();
+  await expect(
+    page.getByRole('heading', { name: 'Ordenar la casa', exact: true }),
+  ).toBeVisible();
   await page
     .getByRole('combobox', { name: 'Estado', exact: true })
     .selectOption('CANCELLED');
@@ -360,6 +380,26 @@ test('creates a subtask and refreshes all children after cancelling their princi
   await expect(
     page.getByRole('heading', { name: 'Un poco de espacio para organizarte' }),
   ).toBeVisible();
+});
+
+test('loads and reloads the login route without a session', async ({
+  page,
+}) => {
+  await page.route('**/auth/me', (route) =>
+    route.fulfill({ status: 401, json: { message: 'Unauthorized' } }),
+  );
+
+  await page.goto('/login');
+  await expect(
+    page.getByRole('link', { name: 'Entrar con Google' }),
+  ).toBeVisible();
+  await expect(page).toHaveURL('/login');
+
+  await page.reload();
+  await expect(
+    page.getByRole('link', { name: 'Entrar con Google' }),
+  ).toBeVisible();
+  await expect(page).toHaveURL('/login');
 });
 
 test('uses the live Vite proxy for an unauthenticated API request', async ({

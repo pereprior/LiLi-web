@@ -21,7 +21,9 @@ The current API requires its Gmail sender and application password even with `RE
 
 ## Using the interface
 
-After sign-in, use **Añadir tarea** to create a task. New tasks start as pending; dates do not change their state automatically. A detail can be reloaded or linked using `/?task=<uuid>`. Browser back and forward follow the selection, and returning to the list keeps its filters.
+React Router handles navigation in the browser: `/` shows the authenticated tasks page, and `/login` shows Google sign-in. Opening `/` without a session redirects to `/login`; an authenticated visit to `/login` returns to `/`. Unknown interface paths return to `/`. Session checks finish before redirects, and connection failures keep the retry screen at the requested address.
+
+After sign-in, use **Añadir tarea** to create a task. New tasks start as pending; dates do not change their state automatically. A detail can be reloaded or linked using `/?task=<uuid>`. Browser back and forward follow the selection, and returning to the list keeps its filters. React Router manages this selection in the query string; unrelated query parameters and URL fragments are preserved.
 
 Each optional date accepts a day with or without a time. Dates and times refer to Madrid, independent of the device's timezone. Date-only values stay distinct from explicit midnight. Editing sends only changed fields; removing an optional field sends `null`. Failed validation or a failed write keeps the draft. If a creation loses its confirmation, check the complete list before sending it again. A confirmed write remains successful even if the subsequent reload fails.
 
@@ -41,7 +43,7 @@ Appearance offers light, dark and system modes. Material UI stores this preferen
 
 ## Structure
 
-- `src/app/` composes the session, header, appearance and tasks page; `theme.ts` owns shared visual choices.
+- `src/main.tsx` provides the browser router; `src/app/` composes the session, routes, header, appearance and tasks page. `theme.ts` owns shared visual choices.
 - `src/auth/` owns the user contract, HTTP adapter, session hook and access screen.
 - `src/tasks/components/page/tasks-page.tsx` composes the list, view controls and three task dialogs.
 - `src/tasks/` owns its contracts and enums, API adapter, read and mutation hooks, list, filters, detail, forms, and presentation helpers. Tests live next to their behavior.
@@ -51,7 +53,7 @@ Appearance offers light, dark and system modes. Material UI stores this preferen
 
 Within each feature, components, hooks and utilities are grouped by responsibility. In tasks, `components/` contains `page/`, `list/`, `detail/`, `form/`, `filters/` and `confirmation/`; `hooks/` contains `actions/`, `data/` and `selection/`; and `utils/` contains `dates/`, `form/` and `status/`. Each unit test stays beside its implementation. Authentication groups its access screen under `components/login/` and its session hook under `hooks/session/`; application components use `appearance/` and `branding/`.
 
-The project uses strict TypeScript, ESM, React, Vite, Material UI with Emotion, ESLint, Prettier and Vitest. Browser code uses bundler resolution. Runtime imports use `#src/` with `.js` extensions. Session and task state stay in memory; there is no routing, global state, form or query library.
+The project uses strict TypeScript, ESM, React, React Router, Vite, Material UI with Emotion, ESLint, Prettier and Vitest. Browser code uses bundler resolution. Runtime imports use `#src/` with `.js` extensions. React Router uses its [declarative mode](https://reactrouter.com/start/declarative/installation) with `BrowserRouter`, `Routes` and `Route`; the existing hooks still own session checks and task requests. Session and task data stay in memory; there is no global state, form or query library.
 
 ## Verification
 
@@ -59,7 +61,7 @@ The project uses strict TypeScript, ESM, React, Vite, Material UI with Emotion, 
 pnpm run ci
 ```
 
-This runs lint, formatting, type checks, build and Vitest with V8 coverage. Tests cover the HTTP contract and `204`, query serialization, session lifecycle, Madrid date serialization, partial updates, validation, terminal and family status controls, and discarded late responses.
+This runs lint, formatting, type checks, build and Vitest with V8 coverage. Tests cover session-aware redirects, task selection and browser history, the HTTP contract and `204`, query serialization, session lifecycle, Madrid date serialization, partial updates, validation, terminal and family status controls, and discarded late responses.
 
 Browser checks use Playwright Chromium in desktop and mobile sizes with light and dark themes:
 
@@ -74,10 +76,10 @@ The browser suite starts Vite or uses an existing server at port 5173. Most flow
 RUN_LIVE_API=true pnpm test:browser
 ```
 
-The browser flows exercise task and subtask management, cancellation refresh, filtered family navigation, session expiration, successful saves followed by failed reads, and the favicon. Run CI and browser checks separately. Coverage is printed in the console; temporary test files stay under `node_modules/.cache/`.
+The browser flows exercise login redirects and reloads, task detail reloads and back/forward navigation, task and subtask management, cancellation refresh, filtered family navigation, session expiration, successful saves followed by failed reads, and the favicon. Run CI and browser checks separately. Coverage is printed in the console; temporary test files stay under `node_modules/.cache/`.
 
-The [implementation plan](docs/plan-implementacion-frontend.md) is implemented at the frontend level. Remaining checks are real Google sign-in, authenticated writes with real cookies and Origin, Gmail receipt, and production hosting. Complete keyboard navigation and focus restoration, detail reload/forward navigation, and recovery from an invalid Madrid daylight-saving time also need explicit verification.
+The [implementation plan](docs/plan-implementacion-frontend.md) is implemented at the frontend level. Remaining checks are real Google sign-in, authenticated writes with real cookies and Origin, Gmail receipt, and production hosting. Complete keyboard navigation and focus restoration, and recovery from an invalid Madrid daylight-saving time also need explicit verification.
 
 ## Production hosting
 
-Run `pnpm build` to produce `dist/`. A production server must serve these files and proxy `/auth` and `/tasks` under the same HTTPS origin, preserving cookies and the browser's origin headers. Configure the API's public `APP_ORIGIN` and Google's callback accordingly. Vite and `pnpm preview` do not provide a production API proxy.
+Run `pnpm build` to produce `dist/`. A production server must serve these files and proxy `/auth` and `/tasks` under the same HTTPS origin, preserving cookies and the browser's origin headers. Keep both API prefixes ahead of the SPA fallback; all other interface paths, including `/login`, must fall back to `index.html` so direct links and reloads work. Configure the API's public `APP_ORIGIN` and Google's callback accordingly. Vite and `pnpm preview` do not provide a production API proxy.

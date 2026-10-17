@@ -7,6 +7,7 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { lazy, type ReactElement, Suspense } from 'react';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 
 import { AppearanceSelector } from '#src/app/components/appearance/appearance-selector.js';
 import { Brand } from '#src/app/components/branding/brand.js';
@@ -21,6 +22,7 @@ const TasksPage = lazy(() =>
 
 export function App(): ReactElement {
   const session = useSession();
+  const location = useLocation();
 
   return (
     <>
@@ -85,22 +87,7 @@ export function App(): ReactElement {
               {session.logoutError}
             </Alert>
           )}
-          {session.state.status === 'authenticated' ? (
-            <Suspense
-              fallback={
-                <Stack direction="row" spacing={2} role="status">
-                  <CircularProgress size={24} />
-                  <Typography>Abriendo tus tareas…</Typography>
-                </Stack>
-              }
-            >
-              <TasksPage
-                key={session.state.user.uuid}
-                email={session.state.user.email}
-                onUnauthorized={session.invalidateSession}
-              />
-            </Suspense>
-          ) : session.state.status === 'checking' ? (
+          {session.state.status === 'checking' ? (
             <LoginScreen checking />
           ) : session.state.status === 'error' ? (
             <LoginScreen
@@ -108,7 +95,48 @@ export function App(): ReactElement {
               onRetry={session.checkSession}
             />
           ) : (
-            <LoginScreen />
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  session.state.status === 'authenticated' ? (
+                    <Suspense
+                      fallback={
+                        <Stack direction="row" spacing={2} role="status">
+                          <CircularProgress size={24} />
+                          <Typography>Abriendo tus tareas…</Typography>
+                        </Stack>
+                      }
+                    >
+                      <TasksPage
+                        key={session.state.user.uuid}
+                        email={session.state.user.email}
+                        onUnauthorized={session.invalidateSession}
+                      />
+                    </Suspense>
+                  ) : (
+                    <Navigate
+                      to={{ pathname: '/login', search: location.search }}
+                      replace
+                    />
+                  )
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  session.state.status === 'authenticated' ? (
+                    <Navigate
+                      to={{ pathname: '/', search: location.search }}
+                      replace
+                    />
+                  ) : (
+                    <LoginScreen />
+                  )
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           )}
         </Box>
       </Container>

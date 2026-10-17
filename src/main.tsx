@@ -2,6 +2,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router';
 
 import { App } from '#src/app/app.js';
 import { theme } from '#src/app/theme.js';
@@ -20,7 +21,9 @@ createRoot(container).render(
       noSsr
     >
       <CssBaseline enableColorScheme />
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </ThemeProvider>
   </StrictMode>,
 );

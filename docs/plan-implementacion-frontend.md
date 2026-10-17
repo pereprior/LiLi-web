@@ -225,11 +225,11 @@ y [callback documentado](../../LiLi-api/src/docs/paths/auth/google-callback.yaml
 2. Introducir código compartido solo para responsabilidades realmente comunes,
    como el cliente HTTP. Los recordatorios son un campo de las tareas en la API;
    por ahora no necesitan un módulo frontend independiente.
-3. Propuesta inicial: mantener la aplicación en `/`, con lista y detalle en un
-   panel o diálogo. Usar `/?task=<uuid>` si se quiere poder compartir y recargar
-   la selección, gestionando también atrás/adelante. Esto permite empezar sin
-   añadir una librería de rutas. Si se adoptan rutas de pantalla más adelante,
-   acordarlas y evitar `/tasks`, reservado al proxy de la API.
+3. Mantener las tareas en `/`, con lista y detalle en un panel o diálogo, y el
+   acceso en `/login`. React Router gestiona las rutas y `/?task=<uuid>` para
+   compartir y recargar la selección, incluyendo atrás/adelante. Esperar a la
+   comprobación de sesión antes de redirigir entre acceso y tareas. Evitar
+   `/tasks`, reservado al proxy de la API.
 4. Usar los componentes Material UI y el tema existentes, importando los
    componentes de forma directa como hace la página actual. Conservar el
    selector claro/oscuro/sistema y sus claves de persistencia.
@@ -241,9 +241,10 @@ y [callback documentado](../../LiLi-api/src/docs/paths/auth/google-callback.yaml
    entre vistas, lista y «Añadir tarea». En móvil, el detalle debe poder ocupar
    la pantalla y volver a la lista sin perder sus filtros.
 
-No hace falta instalar ahora un router, gestor global de estado, librería de
-consultas, formularios, iconos o selectores de fecha. Si la implementación
-justifica una dependencia adicional, decidirla por separado antes de instalarla.
+React Router cubre la navegación. No hace falta instalar ahora un gestor global
+de estado, librería de consultas, formularios, iconos o selectores de fecha. Si la
+implementación justifica una dependencia adicional, decidirla por separado antes
+de instalarla.
 El logo y la fuente pendientes no impiden completar los flujos funcionales.
 
 **Terminado cuando:** la estructura separa responsabilidades por funcionalidad,
